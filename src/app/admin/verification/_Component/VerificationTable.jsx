@@ -9,120 +9,188 @@ import { useState } from "react";
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
 import { message } from "antd";
 import KycVerificationModal from "./KycVerificationModal";
-
-// Dummy table Data (Updated with USER column based on image)
-const data = Array.from({ length: 9 }).map((_, inx) => {
-  return {
-    key: inx + 1,
-    name: "sharon smith",
-    userImg: userImage,
-    email: "sharon@gmail.com",
-    contact: "+1234567890",
-    date: "11 oct 24, 11.10PM",
-    role: inx % 3 === 0 ? "Planner" : inx % 3 === 1 ? "User" : "Vendor",
-    status: "Pending",
-  };
-});
+import {
+  useGetVerificationRequestsQuery,
+  useUpdateVerificationRequestMutation,
+} from "@/redux/api/verificationApi";
+import moment from "moment";
+import toast from "react-hot-toast";
 
 export default function VerificationTable() {
   const [searchText, setSearchText] = useState("");
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedUser, setSelectedUser] = useState(null);
 
+  // get all vendor verification data from api
+  const { data: verificationData, isLoading } = useGetVerificationRequestsQuery(
+    {
+      page: currentPage,
+      limit: 10,
+      searchText: searchText,
+    },
+  );
+
+  // varifaction status update api
+  const [updateVerificationStatus] = useUpdateVerificationRequestMutation();
+
+  // Dummy table Data (Updated with USER column based on image)
+  const data =
+    verificationData?.data?.map((item, index) => ({
+      key: item?._id || index,
+
+      // 🔹 Basic
+      id: item?._id,
+      status: item?.status,
+      createdAt: item?.createdAt,
+
+      // 🔹 Personal Info
+      name: item?.personalInfo?.name,
+      dob: item?.personalInfo?.dob,
+      gender: item?.personalInfo?.gender,
+
+      // 🔹 Address Info
+      currentAddress: item?.address?.currentAddress,
+      permanentAddress: item?.address?.permanentAddress,
+      city: item?.address?.city,
+      postalCode: item?.address?.postalCode,
+
+      // 🔹 Identity
+      idType: item?.identityVerification?.idType,
+      idNumber: item?.identityVerification?.number,
+      frontSide: item?.identityVerification?.frontSide,
+      backSide: item?.identityVerification?.backSide,
+
+      // 🔹 Bank
+      bankName: item?.bankInfo?.bankName,
+      accountNumber: item?.bankInfo?.accountNumber,
+      tinOrNid: item?.bankInfo?.tinOrNID,
+
+      fullData: item,
+      createAt: moment(item?.createdAt).format("ll"),
+    })) || [];
   // Block user handler
-  const handleBlockUser = () => {
-    message.success("User blocked successfully");
+  const handleBlockUser = async (userId, status) => {
+    try {
+      const payload = {
+        id: userId,
+        status: status,
+      };
+      const res = await updateVerificationStatus(payload).unwrap();
+      if (res?.success) {
+        toast.success(
+          `User ${status === "approved" ? "approved" : "denied"} successfully`,
+        );
+      } else {
+        toast.error(res?.message || "Something went wrong");
+      }
+    } catch (error) {
+      toast.error("Failed to update verification status");
+    }
   };
 
   // ================== Table Columns ================
   const columns = [
     {
       title: "Serial",
-      dataIndex: "key",
-      render: (value) => `#${value}`,
+      render: (_, __, index) => `#${index + 1}`,
     },
     {
-      title: "User Name",
+      title: "Name",
       dataIndex: "name",
-      render: (value, record) => (
-        <div className="flex-center-start gap-x-2">
-          <p className="font-medium">{value}</p>
-        </div>
-      ),
     },
     {
-      title: "Email",
-      dataIndex: "email",
+      title: "Gender",
+      dataIndex: "gender",
     },
 
     {
-      title: "Role",
-      dataIndex: "role",
-      filters: [
-        { text: "Planner", value: "Planner" },
-        { text: "User", value: "User" },
-        { text: "Vendor", value: "Vendor" },
-      ],
-      filterIcon: (filtered) => (
-        <Filter
-          size={16}
-          color={filtered ? "#1B70A6" : "#000000"}
-          style={{ cursor: "pointer" }}
-        />
-      ),
-      onFilter: (value, record) => record.fleet777 === value,
+      title: "Current Address",
+      dataIndex: "currentAddress",
+      ellipsis: true,
     },
+
     {
-      title: "Contact",
-      dataIndex: "contact",
-    },
-    {
-      title: " Application Date",
-      dataIndex: "date",
+      title: "TIN / NID",
+      dataIndex: "tinOrNid",
     },
     {
       title: "Status",
       dataIndex: "status",
-      render: (value) => (
-        <span
-          className={`rounded-full px-3 py-1 text-sm font-semibold ${value === "Active" ? "border bg-green-100 text-green-600" : "border bg-white text-red-600"}`}
-        >
-          {value || "Active"}
-        </span>
-      ),
+      render: (value) => {
+        const status = value?.toLowerCase();
+
+        const colorMap = {
+          pending: "bg-yellow-100 text-yellow-600",
+          approved: "bg-green-100 text-green-600",
+          rejected: "bg-red-100 text-red-600",
+        };
+
+        return (
+          <span
+            className={`rounded-full px-3 py-1 text-sm font-semibold ${
+              colorMap[status] || "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {value}
+          </span>
+        );
+      },
+    },
+    {
+      title: "Created At",
+      dataIndex: "createAt",
     },
     {
       title: "Action",
       dataIndex: "action",
-      render: () => (
+      render: (_, record) => (
         <div className="flex-center-start gap-x-3">
+          {" "}
           <Tooltip title="Show Details">
-            <button onClick={() => setProfileModalOpen(true)}>
-              <Eye color="#1B70A6" size={22} />
-            </button>
-          </Tooltip>
-
-          <Tooltip title="Accept User">
-            <CustomConfirm
-              title="accept User"
-              description="Are you sure to accept this user?"
-              onConfirm={handleBlockUser}
+            {" "}
+            <button
+              onClick={() => {
+                setProfileModalOpen(true);
+                setSelectedUser(record);
+              }}
             >
-              <button>
-                <Check color="#1B70A6" size={22} />
-              </button>
-            </CustomConfirm>
-          </Tooltip>
-          <Tooltip title="Decline User">
-            <CustomConfirm
-              title="decline User"
-              description="Are you sure to decline this user?"
-              onConfirm={handleBlockUser}
-            >
-              <button>
-                <X color="red" size={22} />
-              </button>
-            </CustomConfirm>
-          </Tooltip>
+              {" "}
+              <Eye color="#1B70A6" size={22} />{" "}
+            </button>{" "}
+          </Tooltip>{" "}
+          {record?.status === "pending" && (
+            <>
+              <Tooltip title="Accept User">
+                {" "}
+                <CustomConfirm
+                  title="accept User"
+                  description="Are you sure to accept this user?"
+                  onConfirm={() => handleBlockUser(record.id, "approved")}
+                >
+                  {" "}
+                  <button>
+                    {" "}
+                    <Check color="#1B70A6" size={22} />{" "}
+                  </button>{" "}
+                </CustomConfirm>{" "}
+              </Tooltip>{" "}
+              <Tooltip title="Decline User">
+                {" "}
+                <CustomConfirm
+                  title="decline User"
+                  description="Are you sure to decline this user?"
+                  onConfirm={() => handleBlockUser(record.id, "denied")}
+                >
+                  {" "}
+                  <button>
+                    {" "}
+                    <X color="red" size={22} />{" "}
+                  </button>{" "}
+                </CustomConfirm>{" "}
+              </Tooltip>{" "}
+            </>
+          )}
         </div>
       ),
     },
@@ -150,12 +218,22 @@ export default function VerificationTable() {
         style={{ overflowX: "auto", overflowY: "auto" }}
         columns={columns}
         dataSource={data}
+        loading={isLoading}
         scroll={{ x: "max-content" }}
+        pagination={{
+          current: currentPage,
+          pageSize: 10,
+          total: verificationData?.meta?.total || 0,
+          onChange: (page) => setCurrentPage(page),
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} verification requests`,
+        }}
       ></Table>
 
       <KycVerificationModal
         open={profileModalOpen}
         setOpen={setProfileModalOpen}
+        user={selectedUser}
       />
     </ConfigProvider>
   );

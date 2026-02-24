@@ -1,19 +1,47 @@
 "use client";
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
-import { Table } from "antd";
-import { Trash } from "lucide-react";
-import React from "react";
+import { useDeleteFaqMutation, useGetFaqsQuery } from "@/redux/api/faqApi";
+import { Table, Tooltip } from "antd";
+import { Edit, Trash, Trash2 } from "lucide-react";
+import moment from "moment";
+import React, { useState } from "react";
+import EditFaqModal from "./EditFaq";
 
-function PlanerFaqTable() {
-  const data = Array.from({ length: 7 }).map((_, inx) => ({
+function PlanerFaqTable({ type }) {
+  const [searchText, setSearchText] = useState("");
+  const [open, setOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRow, setSelectedRow] = useState(null);
+  // get faq from api
+
+  const { data: faq, isLoading } = useGetFaqsQuery({
+    searchText: searchText,
+    page: currentPage,
+    type: type,
+  });
+  // delete faq api handeller
+  const [deleteFaq] = useDeleteFaqMutation();
+  const data = faq?.data?.map((item, inx) => ({
     key: inx + 1,
-    title: "Faq Title",
-    date: "2023-10-01",
-    ans: "Answer",
+    id: item?._id,
+    title: item.question,
+    date: moment(item.createdAt).format("ll"),
+    ans: item.answer,
   }));
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await deleteFaq(id).unwrap();
+      if (response?.success) {
+        toast.success("Faq deleted successfully");
+      }
+    } catch (error) {
+      toast.error(error?.data?.message);
+    }
+  };
   const columns = [
     {
-      title: "Faq Title",
+      title: "Faq Question",
       dataIndex: "title",
     },
     {
@@ -26,18 +54,31 @@ function PlanerFaqTable() {
     },
     {
       title: "Action",
-      dataIndex: "action",
-      render: (value, record) => (
-        <div className="flex-center-start gap-x-2">
-          <CustomConfirm
-            title="Delete"
-            content="Are you sure to delte this faq?"
-            description="Are you sure to delte this faq?"
-            onConfirm={handleBlockUser}
-          >
-            <button>
-              <Trash color="#F16365" size={22} />
+      render: (_, record) => (
+        <div className="flex items-center gap-x-3">
+          <Tooltip title="Edit">
+            <button
+              onClick={() => {
+                setOpen(true);
+                setSelectedRow(record);
+              }}
+            >
+              <Edit color="#1B70A6" size={20} />
             </button>
+          </Tooltip>
+
+          <CustomConfirm
+            title={"Are you sure?"}
+            description={"Are you sure to delete this faq?"}
+            onConfirm={() => {
+              handleDelete(record.id);
+            }}
+          >
+            <Tooltip title="Delete">
+              <button>
+                <Trash2 color="#F16365" size={20} />
+              </button>
+            </Tooltip>
           </CustomConfirm>
         </div>
       ),
@@ -49,7 +90,24 @@ function PlanerFaqTable() {
   };
   return (
     <div>
-      <Table columns={columns} dataSource={data} />
+      <Table
+        columns={columns}
+        dataSource={data}
+        loading={isLoading}
+        pagination={{
+          defaultPageSize: 10,
+          showSizeChanger: false,
+          current: currentPage,
+          onChange: (page) => setCurrentPage(page),
+          total: faq?.meta?.total,
+        }}
+      />
+      <EditFaqModal
+        open={open}
+        setOpen={setOpen}
+        selectedRow={selectedRow}
+        audience={type}
+      />
     </div>
   );
 }

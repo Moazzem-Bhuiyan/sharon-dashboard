@@ -12,18 +12,14 @@ import {
 } from "recharts";
 import { useState } from "react";
 
-// dummy data
-const data = [
-  { month: "Photography", user: 120 },
-  { month: "Catering", user: 140 },
-  { month: "Planning", user: 15 },
-  { month: "Music", user: 12 },
-  { month: "Decor", user: 153 },
-  { month: "Other", user: 64 },
-];
+const EarningSummary = ({ revenueByCategory }) => {
+  const [selectedYear, setSelectedYear] = useState("");
 
-const EarningSummary = () => {
-  const [selectedYear, setSelectedYear] = useState("2024");
+  const data = revenueByCategory?.map((item, inx) => ({
+    key: inx + 1,
+    month: item?.category,
+    user: item?.amount,
+  }));
 
   const handleChange = (value) => {
     setSelectedYear(value);
@@ -34,7 +30,7 @@ const EarningSummary = () => {
       <div className="mb-10 flex items-center justify-between gap-2 lg:flex-wrap xl:flex-nowrap">
         <h1 className="text-xl font-bold">Revenue by Category</h1>
 
-        <div className="space-x-3">
+        {/* <div className="space-x-3">
           <Select
             value={selectedYear}
             style={{ width: 120 }}
@@ -46,7 +42,7 @@ const EarningSummary = () => {
               { value: "2021", label: "2021" },
             ]}
           />
-        </div>
+        </div> */}
       </div>
 
       <ResponsiveContainer width="100%" height={375}>
@@ -79,7 +75,7 @@ const EarningSummary = () => {
           <YAxis axisLine={false} tickLine={false} tickMargin={20} />
 
           <Tooltip
-            formatter={(value) => [`Monthly Earnings: ${value}`]}
+            formatter={(value) => [`Total Earnings: ${value}`]}
             contentStyle={{
               color: "var(--primary-green)",
               fontWeight: "500",

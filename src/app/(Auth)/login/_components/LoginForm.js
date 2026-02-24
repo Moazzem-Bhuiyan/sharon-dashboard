@@ -9,14 +9,45 @@ import { Button } from "antd";
 import { useRouter } from "next/navigation";
 import logo from "@/assets/images/logo.png";
 import Image from "next/image";
+import { jwtDecode } from "jwt-decode";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { useSignInMutation } from "@/redux/api/authApi";
+import CustomLoader from "@/components/CustomLoader/CustomLoader";
+import { setUser } from "@/redux/features/authSlice";
 
 export default function LoginForm() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const [signin, { isLoading }] = useSignInMutation();
 
-  const onLoginSubmit = (data) => {
-    console.log(data);
+  const onLoginSubmit = async (data) => {
+    try {
+      const payload = {
+        ...data,
+      };
+      const res = await signin(payload).unwrap();
 
-    router.push("/admin/dashboard");
+      if (res?.data?.accessToken) {
+        const decodedToken = jwtDecode(res.data.accessToken);
+        const userRole = decodedToken?.role;
+        if (userRole !== "admin") {
+          toast.error("You are not authorized to access this site");
+          return;
+        }
+        toast.success("Login successful");
+        dispatch(
+          setUser({
+            token: res.data.accessToken,
+          }),
+        );
+        router.push("/admin/dashboard");
+      } else {
+        toast.error(res?.message || "Login failed: No access token received");
+      }
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to login");
+    }
   };
 
   return (
@@ -61,6 +92,9 @@ export default function LoginForm() {
           type="primary"
           size="large"
           className="!h-10 w-full !font-semibold"
+          disabled={isLoading}
+          loading={isLoading}
+          icon={isLoading ? <CustomLoader className="h-5 w-5" /> : null}
         >
           Log In
         </Button>

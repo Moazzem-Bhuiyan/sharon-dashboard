@@ -1,50 +1,67 @@
 "use client";
 
-import { ConfigProvider } from "antd";
+import { ConfigProvider, Image } from "antd";
 import { Table } from "antd";
-
-import Image from "next/image";
-import userImage from "@/assets/images/user-avatar.png";
 import { Tag } from "antd";
 import { useState } from "react";
 import ProfileModal from "@/components/SharedModals/ProfileModal";
+import moment from "moment";
 
-// Dummy Data
-const data = Array.from({ length: 4 }).map((_, inx) => ({
-  key: inx + 1,
-  name: "Moazzem Hossain",
-  userImg: userImage,
-  email: "booxos@gmail.com",
-  contact: "+1234567890",
-  date: "11 oct 24, 11:10 PM",
-  accountType: "Admin",
-  gender: "Male",
-  rank: "1",
-  FleetTrained: "Yes",
-  Subscription: "Basic",
-  status: "Active",
-}));
-
-const RecentUserTable = () => {
+const RecentUserTable = ({ recentUsers }) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
+
+  const data = recentUsers?.map((user, inx) => ({
+    key: inx + 1,
+    name: user?.name || "Moazzem Hossain",
+    userImg: user?.photoUrl,
+    email: user?.email,
+    date: moment(user?.createdAt).format("ll"),
+    status: user?.status,
+  }));
 
   // =============== Table columns ===============
   const columns = [
     {
-      title: "Nickname",
+      title: "Name",
       dataIndex: "name",
-      render: (value, record) => (
-        <div className="flex-center-start gap-x-2">
-          <Image
-            src={record.userImg}
-            alt="User avatar"
-            width={52}
-            height={52}
-            className="aspect-square rounded-full"
-          />
-          <p className="font-medium">{value}</p>
-        </div>
-      ),
+      render: (value, record) => {
+        // Helper function to validate URL
+        const isValidUrl = (url) => {
+          if (!url) return false;
+          return (
+            url.startsWith("http://") ||
+            url.startsWith("https://") ||
+            url.startsWith("/")
+          );
+        };
+
+        // Get the first letter of the name (uppercase)
+        const firstLetter = record?.email
+          ? record?.email.charAt(0).toUpperCase()
+          : "";
+
+        // Determine if the image is valid
+        const hasValidImage = isValidUrl(record?.userImg);
+
+        return (
+          <div className="flex-center-start gap-x-2">
+            {hasValidImage ? (
+              <Image
+                src={record?.userImg || "/nouser.png"}
+                alt="/nouser.png"
+                width={40}
+                height={40}
+                className="aspect-square h-10 w-10 rounded-full border object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-[#cbf9f2] to-foundation-accent-400 text-lg font-medium text-white">
+                {firstLetter}
+              </div>
+            )}
+            <p className="font-medium">{value}</p>
+          </div>
+        );
+      },
     },
     {
       title: "Email",

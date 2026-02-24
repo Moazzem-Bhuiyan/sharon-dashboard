@@ -26,13 +26,13 @@ function FaqContainer() {
       </div>
       <Tabs>
         <TabPane tab="Vendor" key="vendor">
-          <VendorFaqTable />
+          <VendorFaqTable type="vendor" />
         </TabPane>
         <TabPane tab="Planer" key="planer">
-          <PlanerFaqTable />
+          <PlanerFaqTable type="planer" />
         </TabPane>
-        <TabPane tab="User" key="user">
-          <UserFaqTable />
+        <TabPane tab="User" type="user">
+          <UserFaqTable type="user" />
         </TabPane>
       </Tabs>
 

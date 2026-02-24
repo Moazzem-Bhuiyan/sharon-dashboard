@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Tag } from "antd";
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
 import { Righteous } from "next/font/google";
+import { useGetWithdrawalRequestsQuery } from "@/redux/api/financialApi";
 
 // Dummy table data
 const data = Array.from({ length: 7 }).map((_, inx) => ({
@@ -20,6 +21,21 @@ const data = Array.from({ length: 7 }).map((_, inx) => ({
 
 export default function WithdrawalRequestTables() {
   const [showEarningModal, setShowEarningModal] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // get withdrawal request data from api and show in table
+  const { data: withdrawalRequests, isLoading } = useGetWithdrawalRequestsQuery(
+    {
+      page: currentPage,
+      limit: 10,
+      searchText: searchText,
+    },
+  );
+  console.log(
+    "🚀 ~ WithdrawalRequestTables ~ withdrawalRequests:",
+    withdrawalRequests,
+  );
 
   // ================== Table Columns ================
   const columns = [

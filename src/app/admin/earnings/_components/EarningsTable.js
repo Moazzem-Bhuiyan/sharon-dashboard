@@ -1,39 +1,37 @@
 "use client";
 
 import { ConfigProvider, Input, Table } from "antd";
-import clsx from "clsx";
-import { ArrowRightLeft, Search } from "lucide-react";
-import userImage from "@/assets/images/user-avatar-lg.png";
-import Image from "next/image";
-import { Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import { Tooltip } from "antd";
 import { Eye } from "lucide-react";
 import { useState } from "react";
 import { Tag } from "antd";
 import EarningModal from "./EarningModal";
+import moment from "moment";
 
-// Dummy data
-const earningStats = [
-  {
-    key: "total",
-    title: "Total Earnings",
-    amount: 350000,
-  },
-];
-
-// Dummy table data
-const data = Array.from({ length: 7 }).map((_, inx) => ({
-  key: inx + 1,
-  name: "Moazzem Hossain",
-  contact: "+1234567890",
-  purchaseDate: "11 oct 24, 11.10PM",
-  amount: 22,
-  accNumber: "1234567890",
-}));
-
-export default function EarningsTable() {
+export default function EarningsTable({
+  transactions,
+  isLoading,
+  setSearchText,
+  setCurrentPage,
+  currentPage,
+}) {
   const [showEarningModal, setShowEarningModal] = useState(false);
+  const [selectedEarning, setSelectedEarning] = useState(null);
 
+  // Dummy table data
+  const data = transactions?.map((item, inx) => ({
+    key: inx + 1,
+    name: item?.user?.name,
+    email: item?.user?.email,
+    purchaseDate: moment(item?.createdAt).format("ll"),
+    amount: item?.amount,
+    modelType: item?.modelType,
+    paymentIntentId: item?.paymentIntentId,
+    transactionId: item?.transactionId,
+    status: item?.status,
+    id: item?.id,
+  }));
   // ================== Table Columns ================
   const columns = [
     {
@@ -56,8 +54,8 @@ export default function EarningsTable() {
       ),
     },
     {
-      title: "ACC Number",
-      dataIndex: "accNumber",
+      title: "Payment Intent Id",
+      dataIndex: "paymentIntentId",
     },
     {
       title: "Date",
@@ -65,9 +63,14 @@ export default function EarningsTable() {
     },
     {
       title: "Action",
-      render: () => (
+      render: (_, record) => (
         <Tooltip title="Show Details">
-          <button onClick={() => setShowEarningModal(true)}>
+          <button
+            onClick={() => {
+              setShowEarningModal(true);
+              setSelectedEarning(record);
+            }}
+          >
             <Eye color="#1B70A6" size={22} />
           </button>
         </Tooltip>
@@ -84,28 +87,6 @@ export default function EarningsTable() {
         },
       }}
     >
-      {/* Earning stats */}
-      {/* <section className="he w-1/2">
-        {earningStats?.map((stat) => (
-          <div
-            key={stat.key}
-            className={clsx(
-              "flex-center-start h-[120px] gap-x-4 rounded-lg from-[#41839E] to-[#0B607E] px-5 py-4 text-lg text-white hover:bg-gradient-to-tr hover:from-[#41839E] hover:to-[#0B607E]",
-              stat.key === "today"
-                ? "bg-primary-blue"
-                : "bg-gradient-to-tr from-[#41839E] to-[#0B607E]",
-            )}
-          >
-            <ArrowRightLeft size={24} />
-            <p className="font-dmSans text-3xl">
-              {stat.title}
-              <span className="pl-3 text-3xl font-semibold">
-                $ {stat.amount || 0}
-              </span>
-            </p>
-          </div>
-        ))}
-      </section> */}
       <div className="mb-3 ml-auto w-1/3 gap-x-5">
         <Input
           placeholder="Search by name or email"
@@ -122,12 +103,21 @@ export default function EarningsTable() {
           columns={columns}
           dataSource={data}
           scroll={{ x: "100%" }}
-          pagination
+          loading={isLoading}
+          pagination={{
+            current: currentPage,
+            pageSize: 10,
+            onChange: (page) => setCurrentPage(page),
+          }}
         ></Table>
       </section>
 
       {/* Show earning modal */}
-      <EarningModal open={showEarningModal} setOpen={setShowEarningModal} />
+      <EarningModal
+        open={showEarningModal}
+        setOpen={setShowEarningModal}
+        earning={selectedEarning}
+      />
     </ConfigProvider>
   );
 }

@@ -1,51 +1,105 @@
 "use client";
 
-import { Divider, Modal } from "antd";
-import Image from "next/image";
-import userImage from "@/assets/images/user-avatar-lg.png";
-import { Tag } from "antd";
+import { Divider, Modal, Tag } from "antd";
+import {
+  User,
+  Mail,
+  Calendar,
+  CreditCard,
+  DollarSign,
+  Hash,
+} from "lucide-react";
 
-export default function EarningModal({ open, setOpen }) {
+export default function EarningModal({ open, setOpen, earning }) {
+  const statusColorMap = {
+    completed: "green",
+    pending: "gold",
+    failed: "red",
+    processing: "blue",
+  };
+
   return (
     <Modal
       centered
       open={open}
-      setOpen={setOpen}
       footer={null}
-      onCancel={() => {
-        setOpen(false);
-      }}
-      title={null}
+      onCancel={() => setOpen(false)}
+      width={900}
+      className="rounded-2xl"
     >
-      <h1 className=" text-center text-2xl font-bold my-10">Transaction Details</h1>
-      <Divider/>
+      <div className="space-y-6 p-2">
+        {/* 🔹 Header */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-800">Payment Details</h2>
 
-      <section className="text-lg font-medium space-y-5 px-4 my-4">
-        <div className="flex-center-between">
-          <span>Name :</span>
-          <span>John Doe</span>
+          <Tag
+            color={statusColorMap[earning?.status?.toLowerCase()] || "default"}
+          >
+            {earning?.status || "N/A"}
+          </Tag>
         </div>
-        <Divider/>
-        <div className="flex-center-between">
-          <span>Transaction ID :</span>
-          <span>#0000008f</span>
+
+        <Divider className="my-2" />
+
+        {/* 🔹 User Info */}
+        <div className="rounded-xl bg-gray-50 p-4 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold uppercase text-gray-500">
+            User Information
+          </h3>
+
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center gap-2">
+              <User size={16} className="text-gray-500" />
+              <span className="font-medium">{earning?.name || "N/A"}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Mail size={16} className="text-gray-500" />
+              <span>{earning?.email || "N/A"}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-gray-500" />
+              <span>{earning?.purchaseDate || "N/A"}</span>
+            </div>
+          </div>
         </div>
-        <Divider/>
-        <div className="flex-center-between">
-          <span>Amount :</span>
-          <span>$500</span>
+
+        {/* 🔹 Payment Info */}
+        <div className="rounded-xl bg-blue-50 p-4 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold uppercase text-blue-600">
+            Payment Information
+          </h3>
+
+          <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
+            <div className="flex items-center gap-2">
+              <DollarSign size={16} className="text-blue-500" />
+              <span className="font-semibold text-blue-700">
+                ${earning?.amount || 0}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <CreditCard size={16} className="text-blue-500" />
+              <span> Model Type : {earning?.modelType || "N/A"}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Hash size={16} className="text-gray-500" />
+              <span className="truncate">
+                Transaction ID : {earning?.transactionId || "N/A"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Hash size={16} className="text-gray-500" />
+              <span className="truncate">
+                Payment Intent ID : {earning?.paymentIntentId || "N/A"}
+              </span>
+            </div>
+          </div>
         </div>
-        <Divider/>
-        <div className="flex-center-between">
-          <span>A/C number :</span>
-          <span>*** **** **** *545</span>
-        </div>
-        <Divider/>
-        <div className="flex-center-between">
-          <span>Date :</span>
-          <span>11 Oct, 2024</span>
-        </div>
-      </section>
+      </div>
     </Modal>
   );
 }

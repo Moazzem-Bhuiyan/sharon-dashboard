@@ -3,65 +3,139 @@
 import { Input, Table, Tag } from "antd";
 import { ConfigProvider } from "antd";
 import { useState } from "react";
-import { message } from "antd";
 
 // import OrderDetailsModal from "@/components/SharedModals/OrderDetailsModal";
-import { Search } from "lucide-react";
-
-// Dummy table Data
-const data = Array.from({ length: 50 }).map((_, inx) => ({
-  key: inx + 1,
-  order_date: "11 oct 24, 11.10PM",
-  customer_name: "Moazzem",
-  email: "justina@gmail.com",
-  amount: "$500",
-  status: "Processing",
-  event_type: "Wedding",
-  location: "New York",
-}));
+import { Eye, Search } from "lucide-react";
+import { useGetAllVendorBookingsQuery } from "@/redux/api/bookingApi";
+import moment from "moment";
+import VendorBookingDetailsModal from "./VendorBookingDetailsModal";
 
 export default function VendorBookingTable() {
   const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
-  // Block user handler
-  const handleBlockUser = () => {
-    message.success(" Order delete  successfully");
+  // get all vendor booking data from api
+  const { data: bookings, isLoading } = useGetAllVendorBookingsQuery({
+    page: currentPage,
+    limit: 10,
+    searchText: searchText,
+  });
+
+  const data = bookings?.data?.map((item, index) => ({
+    key: item._id || index,
+
+    // 🔹 Basic Info
+    id: item._id,
+    title: item.title,
+    type: item.type,
+    authority: item.authority,
+    status: item.status,
+
+    // 🔹 Sender Info
+    sender_id: item.sender?._id,
+    sender_name: item.sender?.name,
+    sender_photo: item.sender?.photoUrl,
+    sender_address: item.sender?.address,
+    sender_kyc: item.sender?.isKycVerified,
+
+    // 🔹 Receiver Info
+    receiver_id: item.receiver?._id,
+    receiver_name: item.receiver?.name,
+    receiver_photo: item.receiver?.photoUrl,
+    receiver_address: item.receiver?.address,
+    receiver_kyc: item.receiver?.isKycVerified,
+
+    // 🔹 Financial Info
+    totalAmount: item.totalAmount,
+    initialAmount: item.initialAmount,
+    pendingAmount: item.pendingAmount,
+    finalAmount: item.finalAmount,
+    refundAmount: item.refundAmount,
+
+    initialPayCompleted: item.initialPayCompleted,
+    finalPayCompleted: item.finalPayCompleted,
+    isFullyPaid: item.isFullyPaid,
+
+    // 🔹 Event Info
+    shortDescription: item.shortDescription,
+    description: item.description,
+    duration: item.duration,
+    startDate: item.startDate,
+    endDate: item.endDate,
+
+    // 🔹 Location Info
+    address: item.address,
+    location_type: item.location?.type,
+    coordinates: item.location?.coordinates,
+    locationUrl: item.locationUrl,
+
+    // 🔹 Flags
+    isCompleted: item.isCompleted,
+    isDeleted: item.isDeleted,
+
+    // 🔹 Timestamps
+    createdAt: moment(item.createdAt).format("LLL"),
+    updatedAt: item.updatedAt,
+  }));
+
+  const statusColorMap = {
+    processing: "blue",
+    pending: "gold",
+    running: "cyan",
+    denied: "red",
+    completed: "green",
   };
-
   // ================== Table Columns ================
   const columns = [
     {
-      title: "Planner Name",
-      dataIndex: "customer_name",
+      title: "Vendor Name (Sender)",
+      dataIndex: "sender_name",
       render: (value, record) => (
         <div className="gap-x-2">
           <p className="font-medium">{value}</p>
-          <p className="text-xs text-gray-400">{record.email}</p>
+          <p className="text-xs text-gray-400">{record.sender_email}</p>
         </div>
       ),
     },
     {
       title: "Event Type",
-      dataIndex: "event_type",
+      dataIndex: "type",
     },
-    {
-      title: "Location",
-      dataIndex: "location",
-    },
+    // {
+    //   title: "Location",
+    //   dataIndex: "address",
+    // },
     {
       title: "Date",
-      dataIndex: "order_date",
+      dataIndex: "createdAt",
     },
     {
       title: "Amount",
-      dataIndex: "amount",
+      dataIndex: "totalAmount",
+      render: (value) => <span>$ {value}</span>,
     },
     {
       title: "Status",
       dataIndex: "status",
       render: (value) => (
-        <Tag color={value === "Processing" ? "blue" : "green"}>{value}</Tag>
+        <Tag color={statusColorMap[value] || "default"}>{value}</Tag>
+      ),
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      render: (_, record) => (
+        <button
+          onClick={() => {
+            setProfileModalOpen(true);
+            setSelectedBooking(record);
+          }}
+          className="rounded px-3 py-1 text-white"
+        >
+          <Eye className="mr-1" color="black" size={24} />
+        </button>
       ),
     },
   ];
@@ -88,13 +162,22 @@ export default function VendorBookingTable() {
         style={{ overflowX: "auto" }}
         columns={columns}
         dataSource={data}
-        scroll={{ x: "100%" }}
+        scroll={{ x: "max-content" }}
+        loading={isLoading}
+        pagination={{
+          current: currentPage,
+          pageSize: 10,
+          total: bookings?.meta?.total || 0,
+          onChange: (page) => setCurrentPage(page),
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} bookings`,
+        }}
       ></Table>
-
-      {/* <OrderDetailsModal
+      <VendorBookingDetailsModal
         open={profileModalOpen}
         setOpen={setProfileModalOpen}
-      /> */}
+        booking={selectedBooking}
+      />
     </ConfigProvider>
   );
 }

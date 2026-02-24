@@ -1,27 +1,43 @@
+"use client";
 import CustomCountUp from "@/components/CustomCountUp/CustomCountUp";
 import { Tabs } from "antd";
-import React from "react";
+import React, { useState } from "react";
 import EarningsTable from "../../earnings/_components/EarningsTable";
 import WithdrawalRequestTables from "../../withdrawals-management/_Component/WithdrawalRequestTable";
+import { useGetTransactionsDataQuery } from "@/redux/api/financialApi";
 
 const { TabPane } = Tabs;
 
 function FinancialContainer() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchText, setSearchText] = useState("");
+  // get transaction data from api and calculate total revenue, commissions, and pending payouts
+  const {
+    data: transactions,
+    isLoading,
+    isError,
+  } = useGetTransactionsDataQuery({
+    page: currentPage,
+    limit: 10,
+    searchText: searchText,
+  });
+  console.log("🚀 ~ FinancialContainer ~ transactions:", transactions);
+
   const userStats = [
     {
       key: "earning",
       title: "Total Revenue",
-      count: 518,
+      count: transactions?.data?.totalRevenue || 0,
     },
     {
       key: "earning",
       title: "Commissions (3%)",
-      count: 518,
+      count: transactions?.data?.commission || 0,
     },
     {
       key: "earning",
       title: "Pending Payouts",
-      count: 118,
+      count: transactions?.data?.pendingPayout || 0,
     },
   ];
   return (
@@ -69,10 +85,19 @@ function FinancialContainer() {
       <div className="mt-10">
         <Tabs>
           <TabPane tab="Transactions" key="1">
-            <EarningsTable />
+            <EarningsTable
+              transactions={transactions?.data?.paymentList}
+              setSearchText={setSearchText}
+              setCurrentPage={setCurrentPage}
+              isLoading={isLoading}
+              currentPage={currentPage}
+            />
           </TabPane>
           <TabPane tab="Withdrawals" key="2">
             <WithdrawalRequestTables />
+          </TabPane>
+          <TabPane tab="Refunds" key="3">
+            <p className="text-gray-500">Refund management coming soon...</p>
           </TabPane>
         </Tabs>
       </div>

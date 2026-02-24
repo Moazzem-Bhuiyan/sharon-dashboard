@@ -1,5 +1,7 @@
 "use client";
 import { DatePicker } from "antd";
+import moment from "moment";
+import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -21,22 +23,18 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function UserStatistics() {
-  const data = [
-    { month: "Jan", user: 12 },
-    { month: "Feb", user: 40 },
-    { month: "Mar", user: 52 },
-    { month: "Apr", user: 22 },
-    { month: "May", user: 53 },
-    { month: "Jun", user: 10 },
-    { month: "Jul", user: 193 },
-    { month: "Aug", user: 134 },
-    { month: "Sep", user: 84 },
-    { month: "Oct", user: 26 },
-    { month: "Nov", user: 164 },
-    { month: "Dec", user: 11 },
-  ];
-
+export default function UserStatistics({ userOverview, onYearChange }) {
+  const [selectedYear, setSelectedYear] = useState(null);
+  const data = userOverview?.map((item, inx) => ({
+    key: inx + 1,
+    month: item?.month,
+    user: item?.count,
+  }));
+  const handleChange = (date, dateString) => {
+    // Date string will contain the selected year
+    setSelectedYear(dateString); // DatePicker returns the year in 'YYYY' format
+    onYearChange(dateString);
+  };
   return (
     <div className="max-w-8xl mx-auto w-full rounded-lg bg-white p-6 shadow-lg">
       <div className="mb-8 flex items-center justify-between">
@@ -45,8 +43,8 @@ export default function UserStatistics() {
         </h2>
         <div>
           <DatePicker
-            // value={selectedYear ? moment(selectedYear, "YYYY") : null}
-            // onChange={handleChange}
+            value={selectedYear ? moment(selectedYear, "YYYY") : null}
+            onChange={handleChange}
             picker="year"
             placeholder="Select Year"
             style={{ width: 120 }}

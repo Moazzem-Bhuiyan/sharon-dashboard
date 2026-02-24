@@ -3,7 +3,6 @@ import { Input, Table } from "antd";
 import { Tooltip } from "antd";
 import { ConfigProvider } from "antd";
 import { Filter, Search } from "lucide-react";
-import userImage from "@/assets/images/user-avatar-lg.png";
 import { Eye } from "lucide-react";
 import { UserX } from "lucide-react";
 import { useState } from "react";
@@ -11,28 +10,63 @@ import Image from "next/image";
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
 import { message } from "antd";
 import ProfileModal from "@/components/SharedModals/ProfileModal";
-
-// Dummy table Data (Updated with USER column based on image)
-const data = Array.from({ length: 9 }).map((_, inx) => {
-  return {
-    key: inx + 1,
-    name: "sharon smith",
-    userImg: userImage,
-    email: "sharon@gmail.com",
-    contact: "+1234567890",
-    date: "11 oct 24, 11.10PM",
-    role: inx % 3 === 0 ? "Planner" : inx % 3 === 1 ? "User" : "Vendor",
-    status: inx % 2 === 0 ? "Active" : "Inactive",
-  };
-});
+import {
+  useBlockUnblockUserMutation,
+  useGetAllusersQuery,
+} from "@/redux/api/userApi";
+import moment from "moment";
+import toast from "react-hot-toast";
 
 export default function AccDetailsTable() {
   const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [selectedUser, SetSelecteduser] = useState("");
+
+  // User data with query parameterss
+  const { data: users, isLoading } = useGetAllusersQuery({
+    limit: 10,
+    page: currentPage,
+    searchText,
+  });
+
+  // status change api handaler----------------
+
+  const [updateStatus, { isLoading: updating }] = useBlockUnblockUserMutation();
+
+  // Dummy table Data (Updated with USER column based on image)
+  const data = users?.data?.map((user, inx) => {
+    return {
+      _id: user?._id,
+      key: inx + 1,
+      name: user?.name || "not found",
+      userImg: user?.photoUrl,
+      email: user?.email || "not found",
+      contact: user?.contractNumber || "not found",
+      date: moment(user?.createdAt).format("ll"),
+      status: user?.status,
+      address: user?.address || "not found",
+      role: user?.role || "not found",
+      categories: user?.categories || [],
+    };
+  });
 
   // Block user handler
-  const handleBlockUser = () => {
-    message.success("User blocked successfully");
+  const handleBlockUser = async (values) => {
+    const payload = {
+      userId: values._id,
+      status: values?.status == "active" ? "blocked" : "active",
+    };
+    try {
+      const res = await updateStatus(payload).unwrap();
+      if (res.success) {
+        toast.success(
+          `${values.name} ${values?.status == "blocked" ? "unblocked" : "blocked"} successfully!`,
+        );
+      }
+    } catch (error) {
+      toast.error(error?.data?.message);
+    }
   };
 
   // ================== Table Columns ================
@@ -67,9 +101,9 @@ export default function AccDetailsTable() {
       title: "Role",
       dataIndex: "role",
       filters: [
-        { text: "Planner", value: "Planner" },
-        { text: "User", value: "User" },
-        { text: "Vendor", value: "Vendor" },
+        { text: "Planner", value: "planer" },
+        { text: "User", value: "user" },
+        { text: "Vendor", value: "vendor" },
       ],
       filterIcon: (filtered) => (
         <Filter
@@ -78,7 +112,14 @@ export default function AccDetailsTable() {
           style={{ cursor: "pointer" }}
         />
       ),
-      onFilter: (value, record) => record.fleet777 === value,
+      onFilter: (value, record) => record.role === value,
+      render: (value) => (
+        <span
+          className={`rounded-full px-3 py-1 text-sm font-semibold ${value === "planer" ? "border bg-green-100 text-green-600" : value === "vendor" ? "border bg-blue-100 text-blue-600" : "border bg-gray-100 text-gray-600"}`}
+        >
+          {value}
+        </span>
+      ),
     },
     {
       title: "Contact",
@@ -91,9 +132,21 @@ export default function AccDetailsTable() {
     {
       title: "Status",
       dataIndex: "status",
+      filters: [
+        { text: "Active", value: "active" },
+        { text: "Blocked", value: "blocked" },
+      ],
+      filterIcon: (filtered) => (
+        <Filter
+          size={16}
+          color={filtered ? "#1B70A6" : "#000000"}
+          style={{ cursor: "pointer" }}
+        />
+      ),
+      onFilter: (value, record) => record.status === value,
       render: (value) => (
         <span
-          className={`rounded-full px-3 py-1 text-sm font-semibold ${value === "Active" ? "border bg-green-100 text-green-600" : "border bg-white text-red-600"}`}
+          className={`rounded-full px-3 py-1 text-sm font-semibold ${value === "active" ? "border bg-green-100 text-green-600" : "border bg-white text-red-600"}`}
         >
           {value || "Active"}
         </span>
@@ -101,24 +154,26 @@ export default function AccDetailsTable() {
     },
     {
       title: "Action",
-      onCell: () => ({
-        style: {
-          backgroundColor: "#ffffff",
-        },
-      }),
-      render: () => (
-        <div className="flex-center-start gap-x-3 !bg-white">
+      dataIndex: "action",
+      render: (_, record) => (
+        <div className="flex-center-start gap-x-3">
           <Tooltip title="Show Details">
-            <button onClick={() => setProfileModalOpen(true)}>
+            <button
+              onClick={() => {
+                setProfileModalOpen(true);
+                SetSelecteduser(record);
+              }}
+            >
               <Eye color="#1B70A6" size={22} />
             </button>
           </Tooltip>
 
           <Tooltip title="Block User">
             <CustomConfirm
-              title="Block User"
-              description="Are you sure to block this user?"
-              onConfirm={handleBlockUser}
+              title={`${record?.status == "blocked" ? "Unblock User" : "Blocked User"}`}
+              description={`Are you sure to ${record?.status == "blocked" ? "Unblock" : "Blocked"} this user?`}
+              loading={updating}
+              onConfirm={() => handleBlockUser(record)}
             >
               <button>
                 <UserX color="#F16365" size={22} />
@@ -153,9 +208,21 @@ export default function AccDetailsTable() {
         columns={columns}
         dataSource={data}
         scroll={{ x: "max-content" }}
+        pagination={{
+          current: currentPage,
+          pageSize: 10,
+          total: data?.meta?.total,
+          onChange: (page) => setCurrentPage(page),
+          showTotal: (total) => `Total ${total} users`,
+        }}
+        loading={isLoading}
       ></Table>
 
-      <ProfileModal open={profileModalOpen} setOpen={setProfileModalOpen} />
+      <ProfileModal
+        open={profileModalOpen}
+        setOpen={setProfileModalOpen}
+        selectedUser={selectedUser}
+      />
     </ConfigProvider>
   );
 }
