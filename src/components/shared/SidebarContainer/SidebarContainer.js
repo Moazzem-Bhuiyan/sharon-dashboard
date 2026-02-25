@@ -4,7 +4,7 @@ import "./Sidebar.css";
 import logo from "@/assets/logos/logoforsideber.png";
 import { Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
-import { Album, BookText, ChartArea, CircleDollarSign } from "lucide-react";
+import { BookText, ChartArea, CircleDollarSign } from "lucide-react";
 import { ScrollText } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { SlidersVertical } from "lucide-react";
@@ -85,7 +85,25 @@ const SidebarContainer = ({ collapsed }) => {
     {
       key: "subscriptions",
       icon: <CircleDollarSign size={21} strokeWidth={2} />,
-      label: <Link href={"/admin/manage-subscription"}>Subscriptions</Link>,
+      label: "Subscriptions",
+      children: [
+        {
+          key: "subscriptionsplan",
+          icon: <ScrollText size={21} strokeWidth={2} />,
+          label: (
+            <Link href="/admin/manage-subscription">Subscriptions Pakages</Link>
+          ),
+        },
+        {
+          key: "subscriptionshistory",
+          icon: <ScrollText size={21} strokeWidth={2} />,
+          label: (
+            <Link href="/admin/manage-subscription-history">
+              Subscriptions History
+            </Link>
+          ),
+        },
+      ],
     },
     {
       key: "Content-Management",

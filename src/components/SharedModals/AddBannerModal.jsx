@@ -4,34 +4,33 @@ import { UploadOutlined } from "@ant-design/icons";
 
 import { RiCloseLargeLine } from "react-icons/ri";
 import { useState } from "react";
+import { useCreateBannerMutation } from "@/redux/api/serviceApi";
+import toast from "react-hot-toast";
 
 const AddbannerModal = ({ open, setOpen }) => {
   const [form] = Form.useForm();
 
-  const [loading, setLoading] = useState(false);
+  // create banner
+  const [createBanner, { isLoading }] = useCreateBannerMutation();
 
-  const handleSubmit = (values) => {
-    console.log("Form Values:", values);
-    setOpen(false);
-    form.resetFields();
-  };
+  const handleSubmit = async (values) => {
+    try {
+      const formData = new FormData();
 
-  const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
-    if (!isJpgOrPng) {
-      alert("You can only upload JPG/PNG files!");
-      return Upload.LIST_IGNORE;
+      values.bannerImage?.forEach((file) => {
+        formData.append("files", file.originFileObj);
+      });
+
+      const res = await createBanner(formData).unwrap();
+
+      if (res?.success) {
+        toast.success("Banner created successfully");
+        setOpen(false);
+        form.resetFields();
+      }
+    } catch (error) {
+      toast.error(error?.data?.message || "Something went wrong");
     }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      alert("Image must be smaller than 2MB!");
-      return Upload.LIST_IGNORE;
-    }
-    return false;
-  };
-
-  const onSearch = (value) => {
-    console.log("search:", value);
   };
 
   return (
@@ -97,7 +96,8 @@ const AddbannerModal = ({ open, setOpen }) => {
               <Upload
                 name="imageBanner"
                 listType="picture"
-                beforeUpload={beforeUpload}
+                beforeUpload={false}
+                multiple
               >
                 <Button icon={<UploadOutlined />}>Upload Banner Image</Button>
               </Upload>
@@ -109,11 +109,11 @@ const AddbannerModal = ({ open, setOpen }) => {
               size="large"
               type="primary"
               block
-              loading={loading}
               style={{
                 color: "white",
                 marginTop: "20px",
               }}
+              loading={isLoading}
             >
               Upload
             </Button>

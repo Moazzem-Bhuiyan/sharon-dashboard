@@ -1,15 +1,45 @@
+"use client";
 import Image from "next/image";
-import adminImg from "@/assets/images/user-avatar-lg.png";
 import { ImagePlus } from "lucide-react";
-
 import { Tabs } from "antd";
 import { ConfigProvider } from "antd";
 import ChangePassForm from "./ChangePassForm";
 import EditProfileForm from "./EditProfileForm";
+import { useState, useRef } from "react";
+import { useGetMyProfileQuery } from "@/redux/api/authApi";
+import userAvatar from "@/assets/images/user-avatar-lg.png";
 
 const { TabPane } = Tabs;
+/**
+ * ProfileContainer
+ *
+ * A component that displays the profile information of an admin user.
+ * It includes the profile picture, name, role, and two tabs for editing the profile and changing the password.
+ *
+ * @returns {JSX.Element} A JSX element representing the profile container.
+ */
 
 export default function ProfileContainer() {
+  const { data } = useGetMyProfileQuery();
+  const user = data?.data;
+
+  // State to store the uploaded image
+  const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Handle image upload
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
+
+  // Trigger file input click
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
   return (
     <ConfigProvider
       theme={{
@@ -23,24 +53,41 @@ export default function ProfileContainer() {
         <section className="flex-center gap-x-3">
           <div className="relative w-max">
             <Image
-              src={adminImg}
+              src={
+                selectedImage
+                  ? URL.createObjectURL(selectedImage)
+                  : user?.photoUrl || userAvatar
+              }
               alt="Admin avatar"
               width={1200}
               height={1200}
-              className="aspect-square h-auto w-[160px] rounded-full border-2 border-[#FC7757] p-1"
+              className="border-primary-pink aspect-square h-auto w-[160px] rounded-full border-2 object-contain p-1 shadow-lg"
+            />
+
+            {/* Hidden file input */}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              className="hidden"
             />
 
             {/* Edit button */}
-            <button className="flex-center absolute bottom-2 right-2 aspect-square rounded-full bg-[#FC7757] p-2 text-white/95">
+            <button
+              onClick={triggerFileInput}
+              className="flex-center absolute bottom-2 right-2 aspect-square rounded-full bg-[#2C50ED] p-2 text-white/95"
+            >
               <ImagePlus size={20} />
             </button>
           </div>
 
           <div>
-            <h3 className="text-3xl font-semibold">Sharon</h3>
-            <p className="mt-1 text-lg font-medium text-[#FC7757]">
+            <h3 className="text-3xl font-semibold">{user?.name}</h3>
+            <p className="mt-1 text-lg font-medium text-primary-blue">
               Administrator
             </p>
+            {/* <p>Selected Image: {selectedImage ? selectedImage.name : 'None'}</p> */}
           </div>
         </section>
 
@@ -48,7 +95,7 @@ export default function ProfileContainer() {
         <section className="my-16">
           <Tabs defaultActiveKey="editProfile" centered>
             <TabPane tab="Edit Profile" key="editProfile">
-              <EditProfileForm />
+              <EditProfileForm user={user} selectedImage={selectedImage} />
             </TabPane>
 
             <TabPane tab="Change Password" key="changePassword">

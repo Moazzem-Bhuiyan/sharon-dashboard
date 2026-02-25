@@ -1,74 +1,40 @@
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
-import { Badge, Button } from "antd";
+import { useDeleteSubCriptionMutation } from "@/redux/api/subsCriptionApi";
+import { Button } from "antd";
 import { Trash2 } from "lucide-react";
 import { Edit } from "lucide-react";
+import toast from "react-hot-toast";
 
-export default function SubscriptionPlanCard({ data, setShowEditPlanModal }) {
-  // Most popular card
-  if (data?.isHighlighted) {
-    return (
-      <div className="rounded-3xl border border-gray-300 bg-foundation-accent-800 p-7 text-white font-medium flex flex-col justify-between">
-        <div>
-          <div className="space-y-4">
-            <div className="flex-center-between">
-              <h4 className="text-2xl font-semibold">{data?.title} Plan</h4>
-              <Badge className="rounded-full bg-gradient-to-br from-[#cbf9f2] to-foundation-accent-400 text-base font-semibold text-black !p-2">
-                {data?.tag}
-              </Badge>
-            </div>
+export default function SubscriptionPlanCard({
+  data,
+  setShowEditPlanModal,
+  SetData,
+}) {
+  // pakage delete handaller-------------
 
-            <h1 className="text-5xl font-semibold">
-              ${data?.price}{" "}
-              <span className="text-xl font-medium text-white/80">
-                /{data?.duration}
-              </span>
-            </h1>
+  const [deletePakage, { isLoading }] = useDeleteSubCriptionMutation();
 
-            <p className="font-medium text-white/75">{data?.type}</p>
-          </div>
-
-          <div className="my-4 h-[1px] w-full border-b border-dashed"></div>
-
-          <p className="text-lg">{data?.feature}</p>
-        </div>
-
-        <div className="space-x-4 flex-center">
-          <CustomConfirm
-            title="Delete Plan"
-            description={"Are you sure you want to delete this plan?"}
-            onConfirm={() => {}}
-          >
-            <Button
-              className="!font-medium w-1/2 !bg-danger !text-white !border-none"
-              icon={<Trash2 size={16} />}
-            >
-              Delete
-            </Button>
-          </CustomConfirm>
-
-          <Button
-            type="primary"
-            className="!font-medium w-1/2"
-            icon={<Edit size={16} />}
-            onClick={() => setShowEditPlanModal(true)}
-          >
-            Edit
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const handleDelete = async (id) => {
+    try {
+      const res = await deletePakage(id).unwrap();
+      if (res.success) {
+        toast.success("Pakage Delete successfully");
+      }
+    } catch (error) {
+      toast.error(error?.data?.message);
+    }
+  };
 
   // Normal subscription card
   return (
-    <div className="rounded-3xl border border-gray-300 p-7 font-medium flex flex-col justify-between gap-y-4">
+    <div className="flex flex-col justify-between gap-y-4 rounded-3xl border border-gray-300 p-7 font-medium">
       <div>
         <div className="space-y-4">
           <h4 className="text-2xl font-semibold">{data?.title} Plan</h4>
           <h1 className="text-5xl font-semibold">
-            ${data?.price}
+            $ {data?.price}
             <span className="text-xl font-medium text-black/50">
-              /{data?.duration}
+              /{data?.billingCycle}
             </span>
           </h1>
           <p className="font-medium text-black/75">{data?.type}</p>
@@ -76,18 +42,27 @@ export default function SubscriptionPlanCard({ data, setShowEditPlanModal }) {
 
         <div className="my-4 h-[1px] w-full border-b border-dashed border-b-black"></div>
 
-        <p className="text-lg">{data?.feature}</p>
+        <div>
+          {data?.description && (
+            <ul className="list-disc pl-5 text-lg">
+              {data.description.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       {/* Edit & Delete Button */}
-      <div className="space-x-4 flex-center">
+      <div className="flex-center space-x-4">
         <CustomConfirm
           title="Delete Plan"
           description={"Are you sure you want to delete this plan?"}
-          onConfirm={() => {}}
+          onConfirm={() => handleDelete(data?._id)}
+          isLoading={isLoading}
         >
           <Button
-            className="!font-medium w-1/2 !bg-danger !text-white !border-none"
+            className="w-1/2 !border-none !bg-danger !font-medium !text-white"
             icon={<Trash2 size={16} />}
           >
             Delete
@@ -96,9 +71,12 @@ export default function SubscriptionPlanCard({ data, setShowEditPlanModal }) {
 
         <Button
           type="primary"
-          className="!font-medium w-1/2"
+          className="w-1/2 !font-medium"
           icon={<Edit size={16} />}
-          onClick={() => setShowEditPlanModal(true)}
+          onClick={() => {
+            setShowEditPlanModal(true);
+            SetData(data);
+          }}
         >
           Edit
         </Button>

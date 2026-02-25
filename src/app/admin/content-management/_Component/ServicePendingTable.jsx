@@ -1,18 +1,35 @@
 "use client";
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
-import { Table } from "antd";
+import { useGetServicesQuery } from "@/redux/api/serviceApi";
+import { Table, Tooltip } from "antd";
 import { Check, X } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 export default function ServicePendingTable() {
-  const data = Array.from({ length: 50 }).map((_, inx) => ({
+  const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  // get pending service api handaller
+
+  const { data: service, isLoading } = useGetServicesQuery({
+    page: currentPage,
+    limit: 10,
+    searchText: searchText,
+  });
+
+  const data = service?.data?.map((item, inx) => ({
     key: inx + 1,
-    service_name: "Wedding Photography",
-    customer_name: "Moazzem",
-    email: "justina@gmail.com",
+    service_name: item?.title,
+    customer_name: item?.author?.name,
+    email: item?.author?.email,
     status: "Pending",
-    event_type: "Wedding",
-    role: inx % 3 === 0 ? "Planner" : "Vendor",
+    categories: item?.author?.categories
+      ?.map((category) => category)
+      .join(", "),
+    role: item?.author?.role,
+    subtitle: item?.subtitle,
+    title: item?.title,
+    address: item?.address,
+    locationUrl: item?.locationUrl,
   }));
 
   const columns = [
@@ -20,11 +37,27 @@ export default function ServicePendingTable() {
       title: "Service Name",
       dataIndex: "service_name",
       key: "service_name",
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (value) => (
+        <Tooltip title={value}>
+          <div className="max-w-[150px] truncate text-sm">{value}</div>
+        </Tooltip>
+      ),
     },
     {
       title: "Applicant Name",
       dataIndex: "customer_name",
       key: "customer_name",
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (value) => (
+        <Tooltip title={value}>
+          <div className="max-w-[150px] truncate text-sm">{value}</div>
+        </Tooltip>
+      ),
     },
     {
       title: "Email",
@@ -38,13 +71,48 @@ export default function ServicePendingTable() {
     },
     {
       title: "Category",
-      dataIndex: "event_type",
-      key: "event_type",
+      dataIndex: "categories",
+      key: "categories",
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (value) => (
+        <Tooltip title={value}>
+          <div className="max-w-[150px] truncate text-sm">{value}</div>
+        </Tooltip>
+      ),
     },
     {
       title: "Role",
       dataIndex: "role",
       key: "role",
+    },
+    {
+      title: "Subtitle",
+      dataIndex: "subtitle",
+      key: "subtitle",
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (value) => (
+        <Tooltip title={value}>
+          <div className="max-w-[150px] truncate text-sm">{value}</div>
+        </Tooltip>
+      ),
+    },
+
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (value) => (
+        <Tooltip title={value}>
+          <div className="max-w-[150px] truncate text-sm">{value}</div>
+        </Tooltip>
+      ),
     },
     {
       title: "Action",
@@ -75,7 +143,21 @@ export default function ServicePendingTable() {
 
   return (
     <div>
-      <Table columns={columns} dataSource={data} />
+      <Table
+        columns={columns}
+        dataSource={data}
+        loading={isLoading}
+        pagination={{
+          current: currentPage,
+          pageSize: 10,
+          total: service?.meta?.total,
+          onChange: (page) => {
+            setCurrentPage(page);
+          },
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} services`,
+        }}
+      />
     </div>
   );
 }

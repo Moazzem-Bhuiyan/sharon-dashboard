@@ -1,73 +1,145 @@
 "use client";
 
-import FormWrapper from "@/components/Form/FormWrapper";
-import UInput from "@/components/Form/UInput";
-import UTextArea from "@/components/Form/UTextArea";
-import { Button, Modal } from "antd";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createSubscriptionSchema } from "@/schema/subscriptionSchema";
-import USelect from "@/components/Form/USelect";
+import { useCreateSubCriptionMutation } from "@/redux/api/subsCriptionApi";
+import { Form, Input, Button, Modal, Space, Select, InputNumber } from "antd";
+import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
+const { Option } = Select;
 
 export default function CreateSubscriptionPlanModal({ open, setOpen }) {
-  const onSubmit = (data) => {
-    console.log(data);
+  const [form] = Form.useForm();
+  const [descriptions, setDescriptions] = useState([]);
+
+  // create pakage api handaller
+
+  const [create, { isLoading }] = useCreateSubCriptionMutation();
+
+  const onSubmit = async (data) => {
+    const value = { ...data, description: descriptions };
+    try {
+      const res = await create(value).unwrap();
+      if (res.success) {
+        toast.success("Create New Pakage Successfully");
+        setOpen(false);
+        form.resetFields();
+        setDescriptions([]);
+      }
+    } catch (error) {
+      toast.error(error?.data?.message);
+    }
+  };
+
+  const addDescription = () => {
+    setDescriptions([...descriptions, ""]);
+  };
+
+  const removeDescription = (index) => {
+    setDescriptions(descriptions.filter((_, i) => i !== index));
+  };
+
+  const updateDescription = (index, value) => {
+    const newDescriptions = [...descriptions];
+    newDescriptions[index] = value;
+    setDescriptions(newDescriptions);
   };
 
   return (
     <Modal
       centered
       open={open}
-      setOpen={setOpen}
       footer={null}
       title="Create Subscription Plan"
-      onCancel={() => {
-        setOpen(false);
-      }}
+      onCancel={() => setOpen(false)}
     >
-      <FormWrapper
-        onSubmit={onSubmit}
-        resolver={zodResolver(createSubscriptionSchema)}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onSubmit}
+        validateTrigger="onSubmit"
       >
-        <UInput
-          name="name"
+        <Form.Item
+          name="title"
           label="Name"
-          placeholder="Enter subscription plan name"
-        />
-
-        <UTextArea
-          minRows={5}
-          name="description"
-          label="Description"
-          placeholder="Enter description"
-        />
-        <USelect
-          name="duration"
-          label="Billing Cycle"
-          placeholder="Monthly/Yearly/Quarterly or 6 months/12 months"
-          options={[
-            { value: "monthly", label: "Monthly" },
-            { value: "yearly", label: "Yearly" },
-            { value: "quarterly", label: "Quarterly" },
-            { value: "6 months", label: "6 months" },
-            { value: "12 months", label: "12 months" },
+          rules={[
+            {
+              required: true,
+              message: "Please enter the subscription plan name",
+            },
           ]}
-        />
-        <UInput
-          type="number"
+        >
+          <Input placeholder="Enter subscription plan name" />
+        </Form.Item>
+
+        <Form.Item
+          name="billingCycle"
+          label="Duration"
+          rules={[{ required: true, message: "Please select a duration" }]}
+        >
+          <Select placeholder="Select a duration">
+            <Option value="monthly">Monthly</Option>
+            <Option value="halfYearly">HalfYearly</Option>
+            <Option value="yearly">Yearly</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item label="Description">
+          {descriptions.map((desc, index) => (
+            <Space
+              key={index}
+              align="baseline"
+              style={{ display: "flex", marginBottom: 8 }}
+            >
+              <Input
+                placeholder="Enter description"
+                value={desc}
+                onChange={(e) => updateDescription(index, e.target.value)}
+                style={{ width: 400 }}
+              />
+              <Trash2
+                onClick={() => removeDescription(index)}
+                style={{ color: "#ff4d4f", marginLeft: 8 }}
+                className="cursor-pointer"
+              />
+            </Space>
+          ))}
+          <Button
+            type="dashed"
+            onClick={addDescription}
+            block
+            icon={<Plus />}
+            style={{ marginTop: 8 }}
+          >
+            Add Description
+          </Button>
+        </Form.Item>
+
+        <Form.Item
           name="price"
           label="Price"
-          placeholder="Enter price"
-        />
-
-        <Button
-          htmlType="submit"
-          type="primary"
-          size="large"
-          className="w-full"
+          rules={[{ required: true, message: "Please enter the price" }]}
         >
-          Save
-        </Button>
-      </FormWrapper>
+          <InputNumber
+            type="number"
+            placeholder="Enter price"
+            min={0}
+            style={{ width: "100%" }}
+          />
+        </Form.Item>
+
+        <Form.Item>
+          <Button
+            loading={isLoading}
+            type="primary"
+            htmlType="submit"
+            size="large"
+            block
+          >
+            Save
+          </Button>
+        </Form.Item>
+      </Form>
     </Modal>
   );
 }

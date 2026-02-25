@@ -11,12 +11,14 @@ import { Layout } from "antd";
 import { AlignJustify } from "lucide-react";
 import { Badge } from "antd";
 import { Search } from "lucide-react";
+import { useGetMyProfileQuery } from "@/redux/api/authApi";
 const { Header } = Layout;
 
 export default function HeaderContainer({ collapsed, setCollapsed }) {
   const pathname = usePathname();
   const navbarTitle = pathname.split("/admin")[1];
-
+  const { data, isLoading } = useGetMyProfileQuery();
+  const user = data?.data;
   return (
     <Header
       style={{
@@ -62,13 +64,13 @@ export default function HeaderContainer({ collapsed, setCollapsed }) {
           className="group flex items-center gap-x-2 text-black hover:text-primary-blue"
         >
           <Image
-            src={userAvatar}
+            src={user?.photoUrl || userAvatar}
             alt="Admin avatar"
             width={52}
             height={52}
-            className="rounded-full border-2 border-[#FC7757] p-0.5 group-hover:border"
+            className="aspect-square rounded-full border-2 border-primary-green object-cover p-0.5 shadow-md group-hover:border-primary-blue"
           />
-          <h4 className="text-lg font-semibold">Sharon </h4>
+          Hi {user?.name} <span className="text-2xl">🙌</span>
         </Link>
       </div>
     </Header>
