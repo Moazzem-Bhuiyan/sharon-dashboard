@@ -8,6 +8,19 @@
   src: url("../assets/fonts/GeneralSans-Variable.woff2");
 }
 
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-progress {
+  animation: progress 5s linear forwards;
+}
+
 :root {
   --font-general-sans: "General Sans", sans-serif;
   --font-dm-sans: "DM Sans", sans-serif;

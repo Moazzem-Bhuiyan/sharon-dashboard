@@ -15,16 +15,33 @@ import { useDispatch } from "react-redux";
 import { useSignInMutation } from "@/redux/api/authApi";
 import CustomLoader from "@/components/CustomLoader/CustomLoader";
 import { setUser } from "@/redux/features/authSlice";
+import { useEffect } from "react";
+import {
+  initializeMessaging,
+  messaging,
+  onMessage,
+  requestFcmToken,
+} from "@/lib/firebaseClient";
 
 export default function LoginForm() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [signin, { isLoading }] = useSignInMutation();
 
+  // Initialize Firebase messaging on component mount
+  useEffect(() => {
+    initializeMessaging().then(() => {
+      console.log("Firebase messaging initializeds");
+    });
+  }, []);
+
   const onLoginSubmit = async (data) => {
+    const fcmToken = await requestFcmToken();
+    // console.log("🚀 ~ onLoginSubmit ~ fcmToken:", fcmToken);
     try {
       const payload = {
         ...data,
+        fcmToken: fcmToken ? fcmToken : "",
       };
       const res = await signin(payload).unwrap();
 
@@ -66,7 +83,14 @@ export default function LoginForm() {
         <p className="text-center text-white/90">Sign in to your account</p>
       </section>
 
-      <FormWrapper onSubmit={onLoginSubmit} resolver={zodResolver(loginSchema)}>
+      <FormWrapper
+        onSubmit={onLoginSubmit}
+        resolver={zodResolver(loginSchema)}
+        defaultValues={{
+          email: "admin@verifiedplug.gmail.com",
+          password: "admin123",
+        }}
+      >
         <UInput
           name="email"
           type="email"

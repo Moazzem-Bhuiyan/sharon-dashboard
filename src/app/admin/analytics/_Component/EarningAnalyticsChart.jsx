@@ -11,22 +11,39 @@ import {
   Legend,
 } from "recharts";
 
-const data = [
-  { month: "Jan", planner: 45000, vendor: 38000, total: 48000 },
-  { month: "Feb", planner: 48000, vendor: 42000, total: 50000 },
-  { month: "Mar", planner: 35000, vendor: 32000, total: 40000 },
-  { month: "Apr", planner: 30000, vendor: 28000, total: 35000 },
-  { month: "May", planner: 25000, vendor: 22000, total: 30000 },
-  { month: "Jun", planner: 22000, vendor: 20000, total: 25000 },
-  { month: "Jul", planner: 18000, vendor: 17000, total: 20000 },
-  { month: "Aug", planner: 40000, vendor: 38000, total: 45000 },
-  { month: "Sep", planner: 48000, vendor: 45000, total: 50000 },
-  { month: "Oct", planner: 42000, vendor: 40000, total: 47000 },
-  { month: "Nov", planner: 38000, vendor: 36000, total: 44000 },
-  { month: "Dec", planner: 46000, vendor: 43000, total: 49000 },
-];
+const EarningOverviewChart = ({ data: chartData }) => {
+  // const data = [
+  //   { month: "Jan", planner: 45000, vendor: 38000, total: 48000 },
+  //   { month: "Feb", planner: 48000, vendor: 42000, total: 50000 },
+  //   { month: "Mar", planner: 35000, vendor: 32000, total: 40000 },
+  //   { month: "Apr", planner: 30000, vendor: 28000, total: 35000 },
+  //   { month: "May", planner: 25000, vendor: 22000, total: 30000 },
+  //   { month: "Jun", planner: 22000, vendor: 20000, total: 25000 },
+  //   { month: "Jul", planner: 18000, vendor: 17000, total: 20000 },
+  //   { month: "Aug", planner: 40000, vendor: 38000, total: 45000 },
+  //   { month: "Sep", planner: 48000, vendor: 45000, total: 50000 },
+  //   { month: "Oct", planner: 42000, vendor: 40000, total: 47000 },
+  //   { month: "Nov", planner: 38000, vendor: 36000, total: 44000 },
+  //   { month: "Dec", planner: 46000, vendor: 43000, total: 49000 },
+  // ];
 
-const EarningOverviewChart = () => {
+  const plannerData = chartData?.planerEarningOverview || [];
+  const vendorData = chartData?.vendorEarningOverview || [];
+  const totalData = chartData?.totalEarningOverview || [];
+
+  // Merge arrays by month
+  const data = plannerData.map((item) => {
+    const vendor = vendorData.find((v) => v.month === item.month);
+    const total = totalData.find((t) => t.month === item.month);
+
+    return {
+      month: item.month,
+      planner: item.amount || 0,
+      vendor: vendor?.amount || 0,
+      total: total?.amount || 0,
+    };
+  });
+
   return (
     <div className="mt-20 w-full rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
       <h2 className="mb-6 text-xl font-semibold text-gray-900">

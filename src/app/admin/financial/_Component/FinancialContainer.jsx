@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import EarningsTable from "../../earnings/_components/EarningsTable";
 import WithdrawalRequestTables from "../../withdrawals-management/_Component/WithdrawalRequestTable";
 import { useGetTransactionsDataQuery } from "@/redux/api/financialApi";
+import RefundrequestTable from "./RefundrequestTable";
 
 const { TabPane } = Tabs;
 
@@ -12,16 +13,11 @@ function FinancialContainer() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchText, setSearchText] = useState("");
   // get transaction data from api and calculate total revenue, commissions, and pending payouts
-  const {
-    data: transactions,
-    isLoading,
-    isError,
-  } = useGetTransactionsDataQuery({
+  const { data: transactions, isLoading } = useGetTransactionsDataQuery({
     page: currentPage,
     limit: 10,
     searchText: searchText,
   });
-  console.log("🚀 ~ FinancialContainer ~ transactions:", transactions);
 
   const userStats = [
     {
@@ -97,7 +93,7 @@ function FinancialContainer() {
             <WithdrawalRequestTables />
           </TabPane>
           <TabPane tab="Refunds" key="3">
-            <p className="text-gray-500">Refund management coming soon...</p>
+            <RefundrequestTable />
           </TabPane>
         </Tabs>
       </div>

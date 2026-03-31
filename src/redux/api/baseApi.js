@@ -69,6 +69,7 @@ export const baseApi = createApi({
     "refundRequests",
     "withdrawalRequests",
     "faq",
+    "refundRequests",
   ],
   baseQuery: baseQueryWithRefreshToken,
   endpoints: () => ({}),

@@ -1,29 +1,56 @@
+"use client";
 import CustomCountUp from "@/components/CustomCountUp/CustomCountUp";
-import React from "react";
+import React, { useState } from "react";
 import EarningOverviewChart from "./EarningAnalyticsChart";
 import { BookingStatus } from "./BookingStatusChart";
+import { useGetAnalysisDataQuery } from "@/redux/api/dashboardApi";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 function AnalyticsContainer() {
+  const [order_year, setOrderYear] = useState(null);
+  const [subscription_year, setSubscriptionYear] = useState(null);
+  const [booking_year, setBookingYear] = useState(null);
+
+  // get /analysis/admin data from api
+  const { data, isLoading } = useGetAnalysisDataQuery({
+    order_year,
+    subscription_year,
+    booking_year,
+  });
+
+  if (isLoading) {
+    return (
+      <div>
+        <DotLottieReact
+          src="https://lottie.host/d1f8d990-c2b6-40f1-a8ba-4f9de5a96210/2TGzUPihkf.lottie"
+          loop
+          autoplay
+        />
+      </div>
+    );
+  }
+
   const userStats = [
     {
       key: "users",
       title: "Active Users",
-      count: 518,
+      count: data?.data?.totalUserCount || 0,
     },
     {
-      key: "planer",
+      key: "avgBookingValue",
       title: "Avg. Booking Value",
-      count: 518,
+      count: data?.data?.avgBookingValue || 0,
     },
+
     {
-      key: "vendors",
-      title: "Conversion Rate",
-      count: 118,
+      key: "activeSubscriptionCount",
+      title: "Active Subscriptions",
+      count: data?.data?.activeSubscriptionCount || 0,
     },
     {
       key: "earning",
-      title: "Total Payouts",
-      count: 1500,
+      title: "Total Earning",
+      count: data?.data?.totalEarning || 0,
     },
   ];
   return (
@@ -54,12 +81,12 @@ function AnalyticsContainer() {
       </section>
 
       {/* earning chart */}
-      <EarningOverviewChart />
+      <EarningOverviewChart data={data?.data?.earningOverview} />
 
       {/* booking chart */}
       <div className="my-10 mt-20 w-full rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-semibold">Booking Status Overview</h1>
-        <BookingStatus />
+        <BookingStatus data={data?.data?.bookingOverview} />
       </div>
     </div>
   );

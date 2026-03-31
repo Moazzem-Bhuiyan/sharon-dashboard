@@ -15,11 +15,19 @@ const FinancialApi = baseApi.injectEndpoints({
       }),
       providesTags: ["withdrawalRequests"],
     }),
+    // get single withdrawal request
+    getsingleWithdrawalRequest: builder.query({
+      query: (id) => ({
+        url: `/withdraw/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["withdrawalRequests"],
+    }),
     updateWithdrawalRequest: builder.mutation({
-      query: (payload) => ({
-        url: `/withdraw/status/${payload.id}`,
+      query: ({ id, data }) => ({
+        url: `/withdraw/status/${id}`,
         method: "PATCH",
-        body: payload,
+        body: data,
       }),
       invalidatesTags: ["withdrawalRequests"],
     }),
@@ -38,11 +46,22 @@ const FinancialApi = baseApi.injectEndpoints({
       }),
       providesTags: ["refundRequests"],
     }),
+
+    getsingleRefundRequest: builder.query({
+      query: (id) => ({
+        url: `/refunds/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["refundRequests"],
+    }),
     updateRefundRequest: builder.mutation({
-      query: (payload) => ({
-        url: `/refunds/status/${payload.id}`,
+      query: ({ id, data }) => ({
+        url: `/refunds/status/${id}`,
         method: "PATCH",
-        body: payload,
+        body: {
+          status: data?.status,
+          reason: data?.reason,
+        },
       }),
       invalidatesTags: ["refundRequests"],
     }),
@@ -65,4 +84,6 @@ export const {
   useGetRefundRequestsQuery,
   useUpdateRefundRequestMutation,
   useDeniedRefundRequestMutation,
+  useGetsingleRefundRequestQuery,
+  useGetsingleWithdrawalRequestQuery,
 } = FinancialApi;

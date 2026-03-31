@@ -4,7 +4,7 @@ const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMyNotification: builder.query({
       query: (query) => ({
-        url: `/notification`,
+        url: `/notifications`,
         method: "GET",
         params: query,
       }),
@@ -18,21 +18,21 @@ const notificationApi = baseApi.injectEndpoints({
     }),
     markAsRead: builder.mutation({
       query: () => ({
-        url: `/notification`,
+        url: `/notifications`,
         method: "PATCH",
       }),
       invalidatesTags: ["notification"],
     }),
     deleteNotification: builder.mutation({
       query: () => ({
-        url: `/notification/my-notifications`,
+        url: `/notifications/my-notifications`,
         method: "DELETE",
       }),
       invalidatesTags: ["notification"],
     }),
     deleteSingleNotification: builder.mutation({
       query: (id) => ({
-        url: `/notification/${id}`,
+        url: `/notifications/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["notification"],

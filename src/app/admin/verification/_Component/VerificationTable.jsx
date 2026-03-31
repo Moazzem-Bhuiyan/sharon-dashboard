@@ -1,5 +1,5 @@
 "use client";
-import { Input, Table } from "antd";
+import { Button, Input, Modal, Table } from "antd";
 import { Tooltip } from "antd";
 import { ConfigProvider } from "antd";
 import { Check, Filter, Search, X } from "lucide-react";
@@ -15,13 +15,15 @@ import {
 } from "@/redux/api/verificationApi";
 import moment from "moment";
 import toast from "react-hot-toast";
+import FormWrapper from "@/components/Form/FormWrapper";
+import UTextArea from "@/components/Form/UTextArea";
 
 export default function VerificationTable() {
   const [searchText, setSearchText] = useState("");
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   // get all vendor verification data from api
   const { data: verificationData, isLoading } = useGetVerificationRequestsQuery(
     {
@@ -32,7 +34,8 @@ export default function VerificationTable() {
   );
 
   // varifaction status update api
-  const [updateVerificationStatus] = useUpdateVerificationRequestMutation();
+  const [updateVerificationStatus, { isLoading: isUpdating }] =
+    useUpdateVerificationRequestMutation();
 
   // Dummy table Data (Updated with USER column based on image)
   const data =
@@ -71,6 +74,11 @@ export default function VerificationTable() {
     })) || [];
   // Block user handler
   const handleBlockUser = async (userId, status) => {
+    if (status === "denied") {
+      setIsModalOpen(true);
+      setSelectedUser(userId);
+      return;
+    }
     try {
       const payload = {
         id: userId,
@@ -86,6 +94,24 @@ export default function VerificationTable() {
       }
     } catch (error) {
       toast.error("Failed to update verification status");
+    }
+  };
+
+  // reject modal handler
+  const handleCancel = async (values) => {
+    try {
+      const payload = {
+        id: selectedUser,
+        status: "denied",
+        reason: values.reason,
+      };
+      const res = await updateVerificationStatus(payload).unwrap();
+      if (res?.success) {
+        toast.success("User denied successfully");
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to deny user");
     }
   };
 
@@ -235,6 +261,31 @@ export default function VerificationTable() {
         setOpen={setProfileModalOpen}
         user={selectedUser}
       />
+
+      {/* reject reson modal */}
+      <Modal
+        open={isModalOpen}
+        onCancel={() => {
+          setIsModalOpen(false);
+        }}
+        footer={null}
+        centered
+      >
+        <h1 className="text-xl font-medium">
+          Please enter the reason to reject :
+        </h1>
+        <FormWrapper onSubmit={handleCancel}>
+          <UTextArea name="reason" label="Reason" placeholder="Reason" />
+          <Button
+            loading={isUpdating}
+            className="w-full"
+            type="primary"
+            htmlType="submit"
+          >
+            Submit
+          </Button>
+        </FormWrapper>
+      </Modal>
     </ConfigProvider>
   );
 }

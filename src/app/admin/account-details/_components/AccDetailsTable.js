@@ -211,7 +211,7 @@ export default function AccDetailsTable() {
         pagination={{
           current: currentPage,
           pageSize: 10,
-          total: data?.meta?.total,
+          total: users?.meta?.total,
           onChange: (page) => setCurrentPage(page),
           showTotal: (total) => `Total ${total} users`,
         }}

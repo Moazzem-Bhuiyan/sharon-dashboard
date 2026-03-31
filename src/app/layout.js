@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "../lib/Providers";
 import ReduxProviders from "@/redux/lib/ReduxProvider";
 import { Toaster } from "react-hot-toast";
+import NotificationToast from "@/components/NotificationToast/NotificationToast";
 
 const generalSans = localFont({
   src: "../assets/fonts/GeneralSans-Variable.woff2",
@@ -64,6 +65,7 @@ export default function RootLayout({ children }) {
       >
         <ReduxProviders>
           <Toaster richColors position="top-center" />
+          <NotificationToast />
           <Providers>{children}</Providers>
         </ReduxProviders>
       </body>

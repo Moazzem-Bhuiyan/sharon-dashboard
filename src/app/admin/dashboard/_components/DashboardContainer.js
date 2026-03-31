@@ -5,6 +5,7 @@ import EarningSummary from "./Earnings";
 import UserStatistics from "./UserStatics";
 import { useGetDashboardDataQuery } from "@/redux/api/dashboardApi";
 import { useState } from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function DashboardContainer() {
   const [earningcurrentYear, setearnigCurrentYear] = useState(null);
@@ -15,32 +16,11 @@ export default function DashboardContainer() {
 
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-124px)]">
-        <div className="h-[calc(100vh-124px)] p-6">
-          <div className="max-w-9xl mx-auto">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div
-                  key={i}
-                  className="animate-pulse rounded-lg bg-white shadow-md"
-                >
-                  <div className="p-0">
-                    <div className="h-48 rounded-t-lg bg-gray-200"></div>
-                  </div>
-                  <div className="p-4">
-                    <div className="mb-2 h-4 rounded bg-gray-200"></div>
-                    <div className="mb-4 h-3 rounded bg-gray-200"></div>
-                    <div className="flex gap-2">
-                      <div className="h-9 flex-1 rounded bg-gray-200"></div>
-                      <div className="h-9 flex-1 rounded bg-gray-200"></div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <DotLottieReact
+        src="https://lottie.host/d1f8d990-c2b6-40f1-a8ba-4f9de5a96210/2TGzUPihkf.lottie"
+        loop
+        autoplay
+      />
     );
   }
   // Dummy Data
