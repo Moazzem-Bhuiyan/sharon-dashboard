@@ -26,7 +26,7 @@ export default function EditProfileForm({ user, selectedImage }) {
   };
 
   return (
-    <section className="mt-5 px-10">
+    <section className="mt-5 !w-full border px-10">
       {/* <h4></h4> */}
       <FormWrapper
         onSubmit={handleSubmit}
@@ -35,6 +35,7 @@ export default function EditProfileForm({ user, selectedImage }) {
           email: user?.email,
           contractNumber: user?.contractNumber,
         }}
+        className="w-full"
       >
         <UInput name="name" label="Name" type="text" />
         <UInput name="email" label="Email" type="email" disabled />
