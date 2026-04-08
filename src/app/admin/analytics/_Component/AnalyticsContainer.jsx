@@ -53,6 +53,17 @@ function AnalyticsContainer() {
       count: data?.data?.totalEarning || 0,
     },
   ];
+
+  const handleSubscriptionYear = (year) => {
+    setSubscriptionYear(year);
+  };
+  const handleOrderYear = (year) => {
+    setOrderYear(year);
+  };
+  const handleBookingYear = (year) => {
+    setBookingYear(year);
+  };
+
   return (
     <div>
       {/* User Stats Section */}
@@ -81,7 +92,12 @@ function AnalyticsContainer() {
       </section>
 
       {/* earning chart */}
-      <EarningOverviewChart data={data?.data?.earningOverview} />
+      <EarningOverviewChart
+        onSubscriptionYearChange={handleSubscriptionYear}
+        onOrderYearChange={handleOrderYear}
+        onBookingYearChange={handleBookingYear}
+        data={data?.data?.earningOverview}
+      />
 
       {/* booking chart */}
       <div className="my-10 mt-20 w-full rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">

@@ -64,7 +64,7 @@ export default function EditSubscriptionPlanModal({
       centered
       open={open}
       footer={null}
-      title="Create Subscription Plan"
+      title="Edit Subscription Plan"
       onCancel={() => setOpen(false)}
     >
       <Form
@@ -85,7 +85,7 @@ export default function EditSubscriptionPlanModal({
         >
           <Input placeholder="Enter subscription plan name" />
         </Form.Item>
-
+        {/* 
         <Form.Item
           name="billingCycle"
           label="Duration"
@@ -96,9 +96,9 @@ export default function EditSubscriptionPlanModal({
             <Option value="halfYearly">HalfYearly</Option>
             <Option value="yearly">Yearly</Option>
           </Select>
-        </Form.Item>
+        </Form.Item> */}
 
-        <Form.Item label="Description">
+        {/* <Form.Item label="Description">
           {descriptions.map((desc, index) => (
             <Space
               key={index}
@@ -127,14 +127,19 @@ export default function EditSubscriptionPlanModal({
           >
             Add Description
           </Button>
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           name="price"
           label="Price"
           rules={[{ required: true, message: "Please enter the price" }]}
         >
-          <InputNumber type="number" placeholder="Enter price" min={0} />
+          <InputNumber
+            className="w-full"
+            type="number"
+            placeholder="Enter price"
+            min={0}
+          />
         </Form.Item>
 
         <Form.Item>
@@ -145,7 +150,7 @@ export default function EditSubscriptionPlanModal({
             size="large"
             block
           >
-            Save
+            Update Subscription Plan
           </Button>
         </Form.Item>
       </Form>

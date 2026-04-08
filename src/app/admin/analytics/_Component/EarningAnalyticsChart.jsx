@@ -1,5 +1,7 @@
 "use client";
-import React from "react";
+import { DatePicker } from "antd";
+import moment from "moment";
+import React, { useState } from "react";
 import {
   AreaChart,
   Area,
@@ -11,38 +13,40 @@ import {
   Legend,
 } from "recharts";
 
-const EarningOverviewChart = ({ data: chartData }) => {
-  // const data = [
-  //   { month: "Jan", planner: 45000, vendor: 38000, total: 48000 },
-  //   { month: "Feb", planner: 48000, vendor: 42000, total: 50000 },
-  //   { month: "Mar", planner: 35000, vendor: 32000, total: 40000 },
-  //   { month: "Apr", planner: 30000, vendor: 28000, total: 35000 },
-  //   { month: "May", planner: 25000, vendor: 22000, total: 30000 },
-  //   { month: "Jun", planner: 22000, vendor: 20000, total: 25000 },
-  //   { month: "Jul", planner: 18000, vendor: 17000, total: 20000 },
-  //   { month: "Aug", planner: 40000, vendor: 38000, total: 45000 },
-  //   { month: "Sep", planner: 48000, vendor: 45000, total: 50000 },
-  //   { month: "Oct", planner: 42000, vendor: 40000, total: 47000 },
-  //   { month: "Nov", planner: 38000, vendor: 36000, total: 44000 },
-  //   { month: "Dec", planner: 46000, vendor: 43000, total: 49000 },
-  // ];
+const EarningOverviewChart = ({
+  data: chartData,
+  onBookingYearChange,
+  onOrderYearChange,
+  onSubscriptionYearChange,
+}) => {
+  const [selectedYear, setSelectedYear] = useState(null);
 
-  const plannerData = chartData?.planerEarningOverview || [];
-  const vendorData = chartData?.vendorEarningOverview || [];
-  const totalData = chartData?.totalEarningOverview || [];
+  // Month order for proper sorting
+  const monthOrder = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
-  // Merge arrays by month
-  const data = plannerData.map((item) => {
-    const vendor = vendorData.find((v) => v.month === item.month);
-    const total = totalData.find((t) => t.month === item.month);
+  // ✅ Correct data handling
+  const data = (chartData?.earningOverview || []).sort(
+    (a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month),
+  );
 
-    return {
-      month: item.month,
-      planner: item.amount || 0,
-      vendor: vendor?.amount || 0,
-      total: total?.amount || 0,
-    };
-  });
+  // Handle year change
+  const handleChange = (date, dateString) => {
+    setSelectedYear(dateString);
+    onOrderYearChange && onOrderYearChange(dateString);
+  };
 
   return (
     <div className="mt-20 w-full rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -50,12 +54,24 @@ const EarningOverviewChart = ({ data: chartData }) => {
         Earning Overview
       </h2>
 
+      {/* Year Picker */}
+      <div className="mb-4">
+        <DatePicker
+          value={selectedYear ? moment(selectedYear, "YYYY") : null}
+          onChange={handleChange}
+          picker="year"
+          placeholder="Select earning year"
+          style={{ width: 150 }}
+        />
+      </div>
+
+      {/* Chart */}
       <ResponsiveContainer width="100%" height={400}>
         <AreaChart
           data={data}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
         >
-          {/* Gradient Definitions */}
+          {/* Gradients */}
           <defs>
             <linearGradient id="planner" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#FF9A62" stopOpacity={0.8} />
@@ -71,13 +87,18 @@ const EarningOverviewChart = ({ data: chartData }) => {
             </linearGradient>
           </defs>
 
+          {/* Grid */}
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+
+          {/* X Axis */}
           <XAxis
             dataKey="month"
             tick={{ fill: "#6b7280", fontSize: 14 }}
             axisLine={false}
             tickLine={false}
           />
+
+          {/* Y Axis */}
           <YAxis
             tick={{ fill: "#9ca3af", fontSize: 14 }}
             axisLine={false}
@@ -85,6 +106,7 @@ const EarningOverviewChart = ({ data: chartData }) => {
             tickFormatter={(value) => `${value / 1000}k`}
           />
 
+          {/* Tooltip */}
           <Tooltip
             formatter={(value) => `$ ${(value / 1000).toFixed(1)}k`}
             contentStyle={{
@@ -95,16 +117,17 @@ const EarningOverviewChart = ({ data: chartData }) => {
             }}
           />
 
+          {/* Legend */}
           <Legend
             verticalAlign="bottom"
             height={36}
             iconType="circle"
             formatter={(value) => (
-              <span className="text-sm text-gray-700">{value}</span>
+              <span className="text-sm capitalize text-gray-700">{value}</span>
             )}
           />
 
-          {/* Stacked Areas - Total on top for visibility */}
+          {/* Areas */}
           <Area
             type="monotone"
             dataKey="total"
@@ -116,6 +139,7 @@ const EarningOverviewChart = ({ data: chartData }) => {
             dot={{ fill: "#3B82F6", r: 6, strokeWidth: 2, stroke: "#fff" }}
             activeDot={{ r: 8 }}
           />
+
           <Area
             type="monotone"
             dataKey="planner"
@@ -126,6 +150,7 @@ const EarningOverviewChart = ({ data: chartData }) => {
             fill="url(#planner)"
             dot={{ fill: "#FB923C", r: 6, strokeWidth: 2, stroke: "#fff" }}
           />
+
           <Area
             type="monotone"
             dataKey="vendor"

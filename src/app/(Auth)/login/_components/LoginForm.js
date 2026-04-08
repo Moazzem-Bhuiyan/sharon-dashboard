@@ -87,7 +87,7 @@ export default function LoginForm() {
         onSubmit={onLoginSubmit}
         resolver={zodResolver(loginSchema)}
         defaultValues={{
-          email: "admin@verifiedplug.gmail.com",
+          email: "tiyonbhuiyan.201@gmail.com",
           password: "admin123",
         }}
       >

@@ -19,7 +19,7 @@ export default function SubscriptionsContainer() {
 
   return (
     <div>
-      <Button
+      {/* <Button
         type="primary"
         size="large"
         icon={<Edit size={20} />}
@@ -28,7 +28,7 @@ export default function SubscriptionsContainer() {
         onClick={() => setShowCreatePlanModal(true)}
       >
         Create Subscription Plan
-      </Button>
+      </Button> */}
 
       <section className="my-10 grid grid-cols-1 gap-10 md:grid-cols-2 xl:grid-cols-3">
         {subscriptionPlans?.map((data, idx) => (
