@@ -55,7 +55,7 @@ export default function SubscriptionPlanCard({
 
       {/* Edit & Delete Button */}
       <div className="flex-center space-x-4">
-        <CustomConfirm
+        {/* <CustomConfirm
           title="Delete Plan"
           description={"Are you sure you want to delete this plan?"}
           onConfirm={() => handleDelete(data?._id)}
@@ -67,7 +67,7 @@ export default function SubscriptionPlanCard({
           >
             Delete
           </Button>
-        </CustomConfirm>
+        </CustomConfirm> */}
 
         <Button
           type="primary"
