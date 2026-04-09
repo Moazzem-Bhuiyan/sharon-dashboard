@@ -17,20 +17,22 @@ import { RiFeedbackFill } from "react-icons/ri";
 import { GiTakeMyMoney } from "react-icons/gi";
 import { MdPersonSearch } from "react-icons/md";
 import { FaQuestion } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/features/authSlice";
+import toast from "react-hot-toast";
 
 const SidebarContainer = ({ collapsed }) => {
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const router = useRouter();
 
   // Logout handler
   const onClick = (e) => {
-    // if (e.key === "logout") {
-    //   dispatch(logout());
-    //   router.refresh();
-    //   router.push("/login");
-
-    //   Success_model({ title: "Logout successful" });
-    // }
+    if (e.key === "logout") {
+      dispatch(logout());
+      router.refresh();
+      router.push("/login");
+      toast.success("Logged out successfully");
+    }
     console.log("logout success");
   };
 

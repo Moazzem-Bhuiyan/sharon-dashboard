@@ -54,6 +54,21 @@ export default function KycVerificationModal({ open, setOpen, user }) {
               <p className="text-gray-500">Gender</p>
               <p className="font-medium">{user?.gender || "N/A"}</p>
             </div>
+            <div>
+              <p className="text-gray-500">Email</p>
+              <p className="font-medium">
+                {user?.email ? (
+                  <a
+                    href={`mailto:${user.email}`}
+                    className="text-blue-500 underline"
+                  >
+                    {user.email}
+                  </a>
+                ) : (
+                  "N/A"
+                )}
+              </p>
+            </div>
           </div>
         </div>
         {/* 🔷 Address Information */}
@@ -106,8 +121,10 @@ export default function KycVerificationModal({ open, setOpen, user }) {
               </p>
               <Image
                 src={user?.frontSide}
+                height={200}
+                width={400}
                 alt="Front ID"
-                className="rounded-xl border"
+                className="!h-300 !w-300 rounded-xl border object-cover"
               />
             </div>
 
@@ -117,8 +134,10 @@ export default function KycVerificationModal({ open, setOpen, user }) {
               </p>
               <Image
                 src={user?.backSide}
+                height={200}
+                width={400}
                 alt="Back ID"
-                className="rounded-xl border"
+                className="!h-300 rounded-xl border object-cover"
               />
             </div>
           </div>
@@ -139,8 +158,8 @@ export default function KycVerificationModal({ open, setOpen, user }) {
               <p className="font-medium">{user?.accountNumber || "N/A"}</p>
             </div>
             <div>
-              <p className="text-gray-500">TIN / NID</p>
-              <p className="font-medium">{user?.tinOrNid || "N/A"}</p>
+              <p className="text-gray-500">Bank Code</p>
+              <p className="font-medium">{user?.bankCode || "N/A"}</p>
             </div>
           </div>
         </div>

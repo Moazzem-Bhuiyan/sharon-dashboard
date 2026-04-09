@@ -2,6 +2,7 @@
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
 import CustomLoader from "@/components/CustomLoader/CustomLoader";
 import AddbannerModal from "@/components/SharedModals/AddBannerModal";
+import SkeletonCard from "@/components/SkeletonCard/SkeletonCard";
 import {
   useDeleteBannerMutation,
   useGetBannerQuery,
@@ -41,9 +42,14 @@ const BannerPage = () => {
   };
   if (isLoading) {
     return (
-      <div className="flex-center h-[calc(100vh-124px)]">
-        {" "}
-        <CustomLoader />
+      <div div className="space-y-20">
+        <div className="flex gap-10">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
       </div>
     );
   }

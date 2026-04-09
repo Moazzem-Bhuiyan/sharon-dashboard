@@ -12,6 +12,7 @@ import {
 } from "@/redux/api/categoriesApi";
 import toast from "react-hot-toast";
 import CustomLoader from "@/components/CustomLoader/CustomLoader";
+import SkeletonCard from "@/components/SkeletonCard/SkeletonCard";
 
 // Dummy table data
 const data = Array.from({ length: 7 }).map((_, inx) => ({
@@ -50,9 +51,14 @@ export default function CategoryContainer() {
   };
   if (isLoading) {
     return (
-      <div className="flex-center h-[calc(100vh-124px)]">
-        {" "}
-        <CustomLoader />
+      <div div className="space-y-20">
+        <div className="flex gap-10">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
       </div>
     );
   }

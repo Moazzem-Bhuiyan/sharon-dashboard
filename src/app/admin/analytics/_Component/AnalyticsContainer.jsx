@@ -5,6 +5,7 @@ import EarningOverviewChart from "./EarningAnalyticsChart";
 import { BookingStatus } from "./BookingStatusChart";
 import { useGetAnalysisDataQuery } from "@/redux/api/dashboardApi";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import SkeletonCard from "@/components/SkeletonCard/SkeletonCard";
 
 function AnalyticsContainer() {
   const [order_year, setOrderYear] = useState(null);
@@ -20,12 +21,19 @@ function AnalyticsContainer() {
 
   if (isLoading) {
     return (
-      <div>
-        <DotLottieReact
-          src="https://lottie.host/d1f8d990-c2b6-40f1-a8ba-4f9de5a96210/2TGzUPihkf.lottie"
-          loop
-          autoplay
-        />
+      <div div className="space-y-20">
+        <div className="flex gap-10">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+
+        <div className="justyfy-between flex gap-10">
+          <SkeletonCard width={600} rows={10} />
+          <SkeletonCard width={600} rows={10} />
+        </div>
       </div>
     );
   }

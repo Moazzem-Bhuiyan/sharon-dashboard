@@ -51,6 +51,7 @@ export default function VerificationTable() {
       name: item?.personalInfo?.name,
       dob: item?.personalInfo?.dob,
       gender: item?.personalInfo?.gender,
+      email: item?.user?.email,
 
       // 🔹 Address Info
       currentAddress: item?.address?.currentAddress,
@@ -65,9 +66,9 @@ export default function VerificationTable() {
       backSide: item?.identityVerification?.backSide,
 
       // 🔹 Bank
-      bankName: item?.bankInfo?.bankName,
+      bankName: item?.bankInfo?.accountName,
       accountNumber: item?.bankInfo?.accountNumber,
-      tinOrNid: item?.bankInfo?.tinOrNID,
+      bankCode: item?.bankInfo?.bankCode,
 
       fullData: item,
       createAt: moment(item?.createdAt).format("ll"),
@@ -118,10 +119,6 @@ export default function VerificationTable() {
   // ================== Table Columns ================
   const columns = [
     {
-      title: "Serial",
-      render: (_, __, index) => `#${index + 1}`,
-    },
-    {
       title: "Name",
       dataIndex: "name",
     },
@@ -137,8 +134,8 @@ export default function VerificationTable() {
     },
 
     {
-      title: "TIN / NID",
-      dataIndex: "tinOrNid",
+      title: "Email",
+      dataIndex: "email",
     },
     {
       title: "Status",

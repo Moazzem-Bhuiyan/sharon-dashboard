@@ -6,9 +6,7 @@ import { Filter, Search } from "lucide-react";
 import { Eye } from "lucide-react";
 import { UserX } from "lucide-react";
 import { useState } from "react";
-import Image from "next/image";
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
-import { message } from "antd";
 import ProfileModal from "@/components/SharedModals/ProfileModal";
 import {
   useBlockUnblockUserMutation,
@@ -16,6 +14,7 @@ import {
 } from "@/redux/api/userApi";
 import moment from "moment";
 import toast from "react-hot-toast";
+import { Image } from "antd";
 
 export default function AccDetailsTable() {
   const [searchText, setSearchText] = useState("");
@@ -79,18 +78,42 @@ export default function AccDetailsTable() {
     {
       title: "User Name",
       dataIndex: "name",
-      render: (value, record) => (
-        <div className="flex-center-start gap-x-2">
-          <Image
-            src={record.userImg}
-            alt="User avatar"
-            width={1200}
-            height={1200}
-            className="aspect-square h-auto w-10 rounded-full"
-          />
-          <p className="font-medium">{value}</p>
-        </div>
-      ),
+      render: (value, record) => {
+        // Helper function to validate URL
+        const isValidUrl = (url) => {
+          if (!url) return false;
+          return (
+            url.startsWith("http://") ||
+            url.startsWith("https://") ||
+            url.startsWith("/")
+          );
+        };
+
+        // Get the first letter of the name (uppercase)
+        const firstLetter = value ? value.charAt(0).toUpperCase() : "";
+
+        // Determine if the image is valid
+        const hasValidImage = isValidUrl(record?.userImg);
+
+        return (
+          <div className="flex-center-start gap-x-2">
+            {hasValidImage ? (
+              <Image
+                src={record?.userImg}
+                alt="User avatar"
+                width={40}
+                height={40}
+                className="aspect-square h-auto w-10 rounded-full"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#000000] text-lg font-medium text-white">
+                {firstLetter}
+              </div>
+            )}
+            <p className="font-medium">{value}</p>
+          </div>
+        );
+      },
     },
     {
       title: "Email",

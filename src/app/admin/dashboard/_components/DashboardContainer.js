@@ -5,7 +5,7 @@ import EarningSummary from "./Earnings";
 import UserStatistics from "./UserStatics";
 import { useGetDashboardDataQuery } from "@/redux/api/dashboardApi";
 import { useState } from "react";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import SkeletonCard from "@/components/SkeletonCard/SkeletonCard";
 
 export default function DashboardContainer() {
   const [earningcurrentYear, setearnigCurrentYear] = useState(null);
@@ -16,11 +16,20 @@ export default function DashboardContainer() {
 
   if (isLoading) {
     return (
-      <DotLottieReact
-        src="https://lottie.host/d1f8d990-c2b6-40f1-a8ba-4f9de5a96210/2TGzUPihkf.lottie"
-        loop
-        autoplay
-      />
+      <div div className="space-y-20">
+        <div className="flex gap-10">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+
+        <div className="justyfy-between flex gap-10">
+          <SkeletonCard width={600} rows={10} />
+          <SkeletonCard width={600} rows={10} />
+        </div>
+      </div>
     );
   }
   // Dummy Data

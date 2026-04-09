@@ -71,7 +71,7 @@ export default function SubscriptionPlanCard({
 
         <Button
           type="primary"
-          className="w-1/2 !font-medium"
+          className="w-full !font-medium"
           icon={<Edit size={16} />}
           onClick={() => {
             setShowEditPlanModal(true);
