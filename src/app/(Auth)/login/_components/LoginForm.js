@@ -83,14 +83,7 @@ export default function LoginForm() {
         <p className="text-center text-white/90">Sign in to your account</p>
       </section>
 
-      <FormWrapper
-        onSubmit={onLoginSubmit}
-        resolver={zodResolver(loginSchema)}
-        defaultValues={{
-          email: "tiyonbhuiyan.201@gmail.com",
-          password: "admin123",
-        }}
-      >
+      <FormWrapper onSubmit={onLoginSubmit} resolver={zodResolver(loginSchema)}>
         <UInput
           name="email"
           type="email"
